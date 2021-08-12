@@ -4,15 +4,15 @@
 
 #include "RespaPosStep.h"
 
-/ Constructor
-RespaPosStep::RespaPosStep()(Scalar deltaT, int numSubsteps, std::shared_ptr<ParticleData> particleData)
+// Constructor
+RespaPosStep::RespaPosStep(Scalar deltaT, int numSubsteps, std::shared_ptr<ParticleData> particleData)
 {
     this->m_vel_scaling_factor = deltaT / numSubsteps;
     this->m_pdata = particleData;
 }
 
 //Destructor
-~RespaPosStep::RespaPosStep() {}
+RespaPosStep::~RespaPosStep() {}
 
 // A function to execute a position "half" step according to the RESPA algorithm.
 void RespaPosStep::executeStep(uint64_t timestep)

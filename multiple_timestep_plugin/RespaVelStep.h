@@ -6,6 +6,7 @@
 #define MULTIPLETIMESTEPPLUGIN_RESPAVELSTEP_H
 
 #include "RespaStep.h"
+#include <hoomd/ForceCompute.h>
 
 class RespaVelStep : public RespaStep
         {

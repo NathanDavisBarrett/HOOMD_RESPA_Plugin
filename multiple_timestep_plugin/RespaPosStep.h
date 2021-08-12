@@ -5,6 +5,8 @@
 #ifndef MULTIPLETIMESTEPPLUGIN_RESPAPOSSTEP_H
 #define MULTIPLETIMESTEPPLUGIN_RESPAPOSSTEP_H
 
+#include "RespaStep.h"
+
 class RespaPosStep : public RespaStep
         {
         private:

@@ -5,9 +5,12 @@
 #ifndef MULTIPLETIMESTEPPLUGIN_RESPASTEP_H
 #define MULTIPLETIMESTEPPLUGIN_RESPASTEP_H
 
+#include <memory>
+#include <hoomd/ParticleData.h>
+
 class RespaStep
 {
-private:
+protected:
     std::shared_ptr<ParticleData> m_pdata;
 
 public:
