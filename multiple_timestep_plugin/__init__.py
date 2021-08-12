@@ -6,5 +6,5 @@
 # need to import all submodules defined in this directory
 
 # NOTE: adjust the import statement to match the name of the template
-# (here: example_plugin)
+# (here: multiple_timestep_plugin)
 from hoomd.example_plugin import update

@@ -4,7 +4,7 @@
 # this simple python interface just activates the c++ ExampleUpdater from cppmodule
 # Check out any of the python code in lib/hoomd-python-module/hoomd_script for moreexamples
 
-# First, we need to import the C++ module. It has the same name as this module (example_plugin) but with an underscore
+# First, we need to import the C++ module. It has the same name as this module (multiple_timestep_plugin) but with an underscore
 # in front
 from hoomd.example_plugin import _example_plugin
 
@@ -23,8 +23,8 @@ class example(hoomd.update._updater):
     #
     # \b Examples:
     # \code
-    # example_plugin.update.example()
-    # zeroer = example_plugin.update.example(period=10)
+    # multiple_timestep_plugin.update.example()
+    # zeroer = multiple_timestep_plugin.update.example(period=10)
     # \endcode
     #
     # \a period can be a function: see \ref variable_period_docs for details
