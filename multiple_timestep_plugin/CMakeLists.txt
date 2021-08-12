@@ -56,7 +56,8 @@ ENDMACRO(copy_file)
 
 set(files
     __init__.py
-    multiple_timestep_plugin.py
+#    multiple_timestep_plugin.py
+    respa_integrator.py
         )
 
 install(FILES ${files}
