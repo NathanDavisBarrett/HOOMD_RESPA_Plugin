@@ -58,7 +58,7 @@ ENDMACRO(copy_file)
 
 set(files
     __init__.py
-    #ADD integrate.py??????????????
+    multiple_timestep_plugin.py
         )
 
 install(FILES ${files}

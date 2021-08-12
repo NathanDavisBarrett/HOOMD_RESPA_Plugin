@@ -1,3 +1,4 @@
+print("Importing Multiple Timestep Integrator!")
 import itertools
 
 from hoomd.multiple_timestep_plugin import _multiple_timestep_plugin
