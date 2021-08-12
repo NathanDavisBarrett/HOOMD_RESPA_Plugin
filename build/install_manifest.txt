@@ -1,0 +1,3 @@
+/usr/local/example_plugin/_example_plugin.cpython-39-x86_64-linux-gnu.so
+/usr/local/example_plugin/__init__.py
+/usr/local/example_plugin/update.py
