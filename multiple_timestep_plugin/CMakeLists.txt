@@ -1,14 +1,14 @@
-# Maintainer: mspells
-
-set(COMPONENT_NAME example_plugin)
+set(COMPONENT_NAME multiple_timestep_plugin)
 
 set(_${COMPONENT_NAME}_sources
     module.cc
-    ExampleUpdater.cc
+    MultipleTimestepIntegrator.cc
+    RespaPosStep.cc
+    RespaVelStep.cc
     )
 
 set(_${COMPONENT_NAME}_cu_sources
-    ExampleUpdater.cu
+    MultipleTimestepIntegrator.cu
     )
 
 if (ENABLE_CUDA)
@@ -58,8 +58,8 @@ ENDMACRO(copy_file)
 
 set(files
     __init__.py
-    update.py
-    )
+    #ADD integrate.py??????????????
+        )
 
 install(FILES ${files}
         DESTINATION ${PYTHON_MODULE_BASE_DIR}/${COMPONENT_NAME}

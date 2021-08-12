@@ -7,4 +7,4 @@
 
 # NOTE: adjust the import statement to match the name of the template
 # (here: multiple_timestep_plugin)
-from hoomd.example_plugin import update
+from hoomd.multiple_timestep_plugin import integrate
