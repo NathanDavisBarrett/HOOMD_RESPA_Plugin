@@ -12,7 +12,7 @@ private:
 
 public:
     // A function to execute the step. Details on what things to do in this step will be specified in daughter classes.
-    virutal void executeStep(uint64_t timestep);
+    virtual void executeStep(uint64_t timestep);
 };
 
 #endif //MULTIPLETIMESTEPPLUGIN_RESPASTEP_H
