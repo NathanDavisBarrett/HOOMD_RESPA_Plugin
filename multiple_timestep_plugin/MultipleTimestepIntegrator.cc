@@ -10,10 +10,6 @@ namespace py = pybind11;
 #include "MultipleTimestepIntegrator.cuh"
 #endif
 
-#include "RespaStep.h"
-#include "RespaVelStep.h"
-#include "RespaPosStep.h"
-
 /*! \file MultipleTimestepIntegrator.cc
     \brief Definition of MultipleTimestepIntegrator
 */
@@ -31,10 +27,6 @@ MultipleTimestepIntegrator::MultipleTimestepIntegrator(std::shared_ptr<SystemDef
 MultipleTimestepIntegrator::~MultipleTimestepIntegrator() {
     m_exec_conf->msg->notice(5) << "Destroying MultipleTimestepIntegrator" << std::endl;
 
-    for (unsigned int i = 0; i < m_respa_steps.size(); i++) {
-        delete m_respa_steps.at(i);
-    }
-
 #ifdef ENABLE_MPI
     if (m_comm) {
         m_comm->getComputeCallbackSignal()
@@ -49,6 +41,37 @@ MultipleTimestepIntegrator::~MultipleTimestepIntegrator() {
 void MultipleTimestepIntegrator::setProfiler(std::shared_ptr<Profiler> prof)
 {
     Integrator::setProfiler(prof);
+}
+
+Scalar MultipleTimestepIntegrator::calculateForceScalingFactor(int numSubsteps) {
+    return 0.5 * (m_deltaT / numSubsteps);
+}
+
+Scalar MultipleTimestepIntegrator::calculateVelScalingFactor(int numSubsteps) {
+    return (m_deltaT / numSubsteps);
+}
+
+void MultipleTimestepIntegrator::addSubstep(int stepType, std::shared_ptr<ForceCompute> forceCompute, int numSubsteps) {
+    Scalar forceScalingFactor = NULL;
+    Scalar velScalingFactor = NULL;
+
+    if (stepType == POS_STEP) {
+        if (forceCompute != NULL) {
+            throw std::invalid_argument("forceCompute must be null in order to specify a PosStep");
+        }
+        velScalingFactor = calculateVelScalingFactor(numSubsteps);
+    }
+    else if (stepType == VEL_STEP) {
+        forceScalingFactor = calculateForceScalingFactor(numSubsteps);
+    }
+    else {
+        throw std::invalid_argument(std::to_string(stepType) + " is not a valid stepType");
+    }
+
+    this->m_respa_step_types.push_back(stepType);
+    this->m_respa_step_force_computes.push_back(forceCompute);
+    this->m_respa_step_force_scaling_factors.push_back(forceScalingFactor);
+    this->m_respa_step_vel_scaling_factors.push_back(velScalingFactor);
 }
 
 /*! Create the substeps needed for each loop and subloop in the RESPA algorithm.
@@ -67,10 +90,10 @@ void MultipleTimestepIntegrator::createSubsteps(std::vector<std::pair<std::share
     int stepsPerParentStep = topSubsteps / parentSubsteps;
 
     for (int i = 0; i < stepsPerParentStep; i++) {
-        m_respa_steps.push_back(new RespaVelStep(topForce, m_deltaT, topSubsteps, m_pdata));
+        this->addSubstep(VEL_STEP,topForce,topSubsteps);
 
         if (forceGroups.size() == 1) { //Meaning this is the inner-most forcegroup.
-            m_respa_steps.push_back(new RespaPosStep(m_deltaT, topSubsteps, m_pdata));
+            this->addSubstep(POS_STEP, NULL, topSubsteps);
         }
         else {
             std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> tempGroups = forceGroups;
@@ -79,8 +102,7 @@ void MultipleTimestepIntegrator::createSubsteps(std::vector<std::pair<std::share
 
             MultipleTimestepIntegrator::createSubsteps(tempGroups, topSubsteps);
         }
-
-        m_respa_steps.push_back(new RespaVelStep(topForce, m_deltaT, topSubsteps, m_pdata));
+        this->addSubstep(VEL_STEP,topForce,topSubsteps);
     }
 }
 
@@ -131,8 +153,47 @@ void MultipleTimestepIntegrator::update(uint64_t timestep)
     //     Use force->compute(timestep); See Integrator.cc, computeNetForce() for an example.
     //     But how do you add a new force!? I'm gonna need to override that to mandate a frequency along with the force.
 
-    for (unsigned int i = 0; i < m_respa_steps.size(); i++) {
-        m_respa_steps.at(i)->executeStep(timestep);
+    for (unsigned int i = 0; i < m_respa_step_types.size(); i++) {
+
+        int stepType = m_respa_step_types.at(i);
+        if (stepType == VEL_STEP) {
+            std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
+            Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
+
+            ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
+                                       access_location::host,
+                                       access_mode::readwrite);
+
+            forceCompute->compute(timestep);
+
+            for (unsigned int i = 0; i < m_pdata->getN(); i++) {
+                Scalar3 force = forceCompute->getForce(i);
+                h_vel.data[i].x = h_vel.data[i].x + forceScalingFactor * force.x / h_vel.data[i].w; //The "w" is the particle mass. For another example of this usage, see ParticleData::getMass
+                h_vel.data[i].y = h_vel.data[i].y + forceScalingFactor * force.y / h_vel.data[i].w;
+                h_vel.data[i].z = h_vel.data[i].z + forceScalingFactor * force.z / h_vel.data[i].z;
+            }
+        }
+        else if (stepType == POS_STEP) {
+            Scalar velScalingFactor = m_respa_step_vel_scaling_factors.at(i);
+
+            ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
+                                       access_location::host,
+                                       access_mode::readwrite);
+
+            ArrayHandle<Scalar4> h_pos(m_pdata->getPositions(),
+                                       access_location::host,
+                                       access_mode::readwrite);
+
+            for (unsigned int i = 0; i < m_pdata->getN(); i++)
+            {
+                h_pos.data[i].x = h_pos.data[i].x + velScalingFactor * h_vel.data[i].x;
+                h_pos.data[i].y = h_pos.data[i].y + velScalingFactor * h_vel.data[i].y;
+                h_pos.data[i].z = h_pos.data[i].z + velScalingFactor * h_vel.data[i].z;
+            }
+        }
+        else {
+            throw std::invalid_argument(std::to_string(stepType) + " is not a valid stepType");
+        }
     }
 
 

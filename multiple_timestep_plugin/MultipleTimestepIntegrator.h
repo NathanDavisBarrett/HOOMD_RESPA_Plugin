@@ -12,9 +12,6 @@
 #include <hoomd/Integrator.h>
 #include <vector>
 #include <utility> //std::pair
-#include "RespaStep.h"
-#include "RespaVelStep.h"
-#include "RespaPosStep.h"
 
 // pybind11 is used to create the python bindings to the C++ object,
 // but not if we are compiling GPU kernels
@@ -35,7 +32,15 @@ class MultipleTimestepIntegrator : public Integrator
         {
         private:
             std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> m_respa_forces;
-            std::vector<RespaStep*> m_respa_steps;
+
+            const int VEL_STEP = 0;
+            const int POS_STEP = 1;
+
+            std::vector<int> m_respa_step_types;
+            std::vector<std::shared_ptr<ForceCompute>> m_respa_step_force_computes;
+            std::vector<Scalar> m_respa_step_force_scaling_factors;
+            std::vector<Scalar> m_respa_step_vel_scaling_factors;
+
 
         protected:
             bool m_prepared;              //!< True if preprun had been called
@@ -80,6 +85,12 @@ class MultipleTimestepIntegrator : public Integrator
 
             /// get the anisotropic mode of the integrator
             const std::string getAnisotropicMode();
+
+            Scalar calculateForceScalingFactor(int numSubsteps);
+
+            Scalar calculateVelScalingFactor(int numSubsteps);
+
+            void addSubstep(int stepType, std::shared_ptr<ForceCompute> forceCompute, int numSubsteps);
 
             void createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>>, int);
 
