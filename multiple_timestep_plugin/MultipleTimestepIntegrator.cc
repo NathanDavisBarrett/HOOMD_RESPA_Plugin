@@ -3,6 +3,9 @@
 //
 
 #include "MultipleTimestepIntegrator.h"
+
+namespace py = pybind11;
+
 #ifdef ENABLE_HIP
 #include "MultipleTimestepIntegrator.cuh"
 #endif
@@ -22,11 +25,11 @@
  */
 MultipleTimestepIntegrator::MultipleTimestepIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
 : Integrator(sysdef, deltaT), m_prepared(false), m_aniso_mode(Automatic) {
-    m_exec_conf->msg->notice(5) << "Constructing MultipleTimestepIntegrator" << endl;
+    m_exec_conf->msg->notice(5) << "Constructing MultipleTimestepIntegrator" << std::endl;
 }
 
 MultipleTimestepIntegrator::~MultipleTimestepIntegrator() {
-    m_exec_conf->msg->notice(5) << "Destroying MultipleTimestepIntegrator" << endl;
+    m_exec_conf->msg->notice(5) << "Destroying MultipleTimestepIntegrator" << std::endl;
 
     for (unsigned int i = 0; i < m_respa_steps.size(); i++) {
         delete m_respa_steps.at(i);
@@ -50,7 +53,7 @@ void MultipleTimestepIntegrator::setProfiler(std::shared_ptr<Profiler> prof)
 
 /*! Create the substeps needed for each loop and subloop in the RESPA algorithm.
 */
-void MultipleTimestepIntegrator::createSubsteps(vector<std::pair<std::shared_ptr<ForceCompute>, int>> forceGroups, int parentSubsteps) {
+void MultipleTimestepIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> forceGroups, int parentSubsteps) {
     std::pair<std::shared_ptr<ForceCompute>, int> topGroup = forceGroups.at(0);
 
     std::shared_ptr<ForceCompute> topForce = topGroup.first;
@@ -70,7 +73,7 @@ void MultipleTimestepIntegrator::createSubsteps(vector<std::pair<std::shared_ptr
             m_respa_steps.push_back(new RespaPosStep(m_deltaT, topSubsteps, m_pdata));
         }
         else {
-            vector<std::pair<std::shared_ptr<ForceCompute>, int>> tempGroups = forceGroups;
+            std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> tempGroups = forceGroups;
 
             tempGroups.erase(tempGroups.begin());
 
@@ -89,7 +92,7 @@ void MultipleTimestepIntegrator::prepRun(uint64_t timestep) {
         inline bool operator() (const std::pair<std::shared_ptr<ForceCompute>, int> pair1, const std::pair<std::shared_ptr<ForceCompute>, int> pair2) {
             return (pair1.second < pair2.second);
         }
-    }
+    };
 
     std::sort(m_respa_forces.begin(), m_respa_forces.end(), SortHelper());
 
@@ -128,7 +131,7 @@ void MultipleTimestepIntegrator::update(uint64_t timestep)
     //     Use force->compute(timestep); See Integrator.cc, computeNetForce() for an example.
     //     But how do you add a new force!? I'm gonna need to override that to mandate a frequency along with the force.
 
-    for (unsigned int i = 0; i < m_respa_steps; i++) {
+    for (unsigned int i = 0; i < m_respa_steps.size(); i++) {
         m_respa_steps.at(i)->executeStep(timestep);
     }
 
@@ -142,11 +145,6 @@ void MultipleTimestepIntegrator::update(uint64_t timestep)
 void MultipleTimestepIntegrator::setDeltaT(Scalar deltaT)
 {
     Integrator::setDeltaT(deltaT);
-
-    if (m_rigid_bodies)
-    {
-        m_rigid_bodies->setDeltaT(deltaT);
-    }
 }
 
 /* Add a new force/frequency pair to the integrator.

@@ -35,7 +35,10 @@ class MultipleTimestepIntegrator : public Integrator
         {
         private:
             std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> m_respa_forces;
-            std::vector<*RespaStep> m_respa_steps;
+            std::vector<RespaStep*> m_respa_steps;
+
+        protected:
+            bool m_prepared;              //!< True if preprun had been called
 
         public:
             /** Anisotropic integration mode: Automatic (detect whether
@@ -75,10 +78,10 @@ class MultipleTimestepIntegrator : public Integrator
             /// Set the anisotropic mode of the integrator
             void setAnisotropicMode(const std::string& mode);
 
-            /// Set the anisotropic mode of the integrator
+            /// get the anisotropic mode of the integrator
             const std::string getAnisotropicMode();
 
-            void createSubsteps(vector<std::pair<std::shared_ptr<ForceCompute>, int>>, int);
+            void createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>>, int);
 
             /// Prepare for the run
             void prepRun(uint64_t timestep);
@@ -87,7 +90,10 @@ class MultipleTimestepIntegrator : public Integrator
             void computeNetForce(uint64_t timestep);
 
             /// Add a new force/frequency pair.
-            void addForce(std::pair<std::shared_ptr<ForceCompute>, int>);
+            void addForce(std::shared_ptr<ForceCompute>, int);
+
+        protected:
+            AnisotropicMode m_aniso_mode; //!< Anisotropic mode for this integrator
         };
 
 //! Export the MultipleTimestepIntegrator class to python
