@@ -22,7 +22,6 @@ namespace py = pybind11;
 MultipleTimestepIntegrator::MultipleTimestepIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
 : Integrator(sysdef, deltaT), m_prepared(false), m_aniso_mode(Automatic) {
     m_exec_conf->msg->notice(5) << "Constructing MultipleTimestepIntegrator" << std::endl;
-    m_group =
 }
 
 MultipleTimestepIntegrator::~MultipleTimestepIntegrator() {
@@ -217,7 +216,7 @@ unsigned int MultipleTimestepIntegrator::getNDOF(std::shared_ptr<ParticleGroup> 
     return m_sysdef->getNDimensions() * group_size;
 }
 
-unsigned int MultipleTimestepIntegrator::getRotationalNDOF(std::shared_ptr<ParticleGroup> group);
+unsigned int MultipleTimestepIntegrator::getRotationalNDOF(std::shared_ptr<ParticleGroup> group)
 {
     int res = 0;
 
@@ -245,19 +244,19 @@ unsigned int MultipleTimestepIntegrator::getRotationalNDOF(std::shared_ptr<Parti
         unsigned int group_dof = 0;
         unsigned int dimension = m_sysdef->getNDimensions();
         unsigned int dof_one;
-        ArrayHandle<Scalar3> h_moment_intertia(m_pdata->getMomentsOfIntertiaArray(), access_location::host, access_mode::read);
+        ArrayHandle<Scalar3> h_moment_inertia(m_pdata->getMomentsOfInertiaArray(), access_location::host, access_mode::read);
 
         for (unsigned int group_idx = 0; group_idx < group_size; group_idx++) {
             unsigned int j = group->getMemberIndex(group_idx);
             if (dimension == 3) {
                 dof_one = 3;
-                if (fabs(h_moment_intertia.data[j].x) < EPSILON) {
+                if (fabs(h_moment_inertia.data[j].x) < EPSILON) {
                     dof_one--;
                 }
-                if (fabs(h_moment_intertia.data[j].y) < EPSILON) {
+                if (fabs(h_moment_inertia.data[j].y) < EPSILON) {
                     dof_one--;
                 }
-                if (fabs(h_moment_intertia.data[j].z) < EPSILON) {
+                if (fabs(h_moment_inertia.data[j].z) < EPSILON) {
                     dof_one--;
                 }
             }
@@ -288,7 +287,7 @@ void MultipleTimestepIntegrator::setAnisotropicMode(AnisotropicMode mode) {
 
 /*! get the anisotropic mode of the integrator
  */
-AnisotropicMode MultipleTimestepIntegrator::getAnisotropicMode() {
+bool MultipleTimestepIntegrator::getAnisotropicMode() {
     return m_aniso_mode;
 }
 

@@ -84,7 +84,7 @@ class MultipleTimestepIntegrator : public Integrator
             void setAnisotropicMode(AnisotropicMode mode);
 
             /// get the anisotropic mode of the integrator
-            AnisotropicMode getAnisotropicMode();
+            bool getAnisotropicMode();
 
             Scalar calculateForceScalingFactor(int numSubsteps);
 
