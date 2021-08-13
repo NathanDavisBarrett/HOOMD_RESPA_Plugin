@@ -22,12 +22,12 @@ See 'mode_respa' for more details.
 from hoomd import _hoomd
 from hoomd.md import _md
 import hoomd;
-from hoomd.integrate import _itegrator
+from hoomd.integrate import _integrator
 import copy;
 import sys;
 import warnings;
 
-class mode_respa(_itegrator):
+class mode_respa(_integrator):
     R""" Enables the RESPA integration method.
 
     Args:
