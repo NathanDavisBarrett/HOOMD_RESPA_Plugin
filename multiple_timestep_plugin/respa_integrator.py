@@ -25,6 +25,7 @@ import hoomd;
 from hoomd.integrate import _itegrator
 import copy;
 import sys;
+import warnings;
 
 class mode_respa(_itegrator):
     R""" Enables the RESPA integration method.
@@ -78,10 +79,16 @@ class mode_respa(_itegrator):
     Take the diagram above for example with the timestep (i.e. dt, the time interval of the outermost force) set
     to 300 seconds. The forces would need to be specified as follows:
 
-        [[F1,1],[F2,3],[F3,2]] (Note that the outermost force must always have a relative frequency of 1)
+        [[F1,1],[F2,3],[F3,6]] (Note that for good practice, the outermost force should have a relative frequency of 1)
+                               (Note also that these need not be specified in order. But, once sorted, they must follow
+                                the same nested factoring pattern)
 
     For every F1 calculation, F2 is calculated 3 times. In other words, F2 is calculated 3 times as frequently as F1.
-    For every F2 calculation, F3 is calculated 2 times. In other words, F3 is calculated twice as frequently as F2.
+    For every F1 calculation, F3 is calculated 6 times. In other words, F3 is calculated 6 times as frequently as F1.
+
+    1 is a factor of 3
+    3 is a factor of 6
+    and so on.
 
     At the moment, only NVE simulations can be done using the mode_respa integrator.
     """
@@ -110,6 +117,9 @@ class mode_respa(_itegrator):
         if aniso is not None:
             self.set_params(aniso=aniso)
         hoomd.util.unquiet_status();
+
+        for forceFreqPair in self.forceFreqPairs:
+            self.add_force(forceFreqPair)
 
     ## \internal
     #  \brief Cached set of anisotropic mode enums for ease of access
@@ -143,3 +153,20 @@ class mode_respa(_itegrator):
             self.aniso = aniso
             self.cpp_integrator.setAnisotropicMode(anisoMode)
 
+    def add_force(self,forceFreqPair):
+        R""" Adds a force/frequency pair to the reflected c++ class
+        :param forceFreqPair ([hoomd Force Object,int]): A force/freq pair. See the documentation for mode_respa for
+                                                         for more details.
+        """
+
+        force, freq = forceFreqPair
+        cpp_force = force.cpp_force
+
+        if force.log or force.enabled:
+            force.update_coeff();
+
+        if force.enabled:
+            self.cpp_integrator.addForce(cpp_force, freq)
+
+    def update_forces(self):
+        warnings.warn("WARNING: update_forces() is not used in the mode_respa class but is still being called.")

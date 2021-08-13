@@ -75,16 +75,16 @@ class MultipleTimestepIntegrator : public Integrator
             void setDeltaT(Scalar deltaT);
 
             /// Get the number of degrees of freedom granted to a given group
-            Scalar getTranslationalDOF(std::shared_ptr<ParticleGroup> group);
+            unsigned int getNDOF(std::shared_ptr<ParticleGroup> group);
 
             /// Get the number of degrees of freedom granted to a given group
-            Scalar getRotationalDOF(std::shared_ptr<ParticleGroup> group);
+            unsigned int getRotationalNDOF(std::shared_ptr<ParticleGroup> group);
 
             /// Set the anisotropic mode of the integrator
-            void setAnisotropicMode(const std::string& mode);
+            void setAnisotropicMode(AnisotropicMode mode);
 
             /// get the anisotropic mode of the integrator
-            const std::string getAnisotropicMode();
+            AnisotropicMode getAnisotropicMode();
 
             Scalar calculateForceScalingFactor(int numSubsteps);
 

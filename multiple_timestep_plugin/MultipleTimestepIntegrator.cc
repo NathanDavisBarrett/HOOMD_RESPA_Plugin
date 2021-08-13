@@ -22,6 +22,7 @@ namespace py = pybind11;
 MultipleTimestepIntegrator::MultipleTimestepIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
 : Integrator(sysdef, deltaT), m_prepared(false), m_aniso_mode(Automatic) {
     m_exec_conf->msg->notice(5) << "Constructing MultipleTimestepIntegrator" << std::endl;
+    m_group =
 }
 
 MultipleTimestepIntegrator::~MultipleTimestepIntegrator() {
@@ -208,6 +209,89 @@ void MultipleTimestepIntegrator::setDeltaT(Scalar deltaT)
     Integrator::setDeltaT(deltaT);
 }
 
+/*! Get the number of degrees of freedom granted to a given group
+*/
+unsigned int MultipleTimestepIntegrator::getNDOF(std::shared_ptr<ParticleGroup> query_group) {
+    unsigned int group_size = query_group->getNumMembersGlobal();
+
+    return m_sysdef->getNDimensions() * group_size;
+}
+
+unsigned int MultipleTimestepIntegrator::getRotationalNDOF(std::shared_ptr<ParticleGroup> group);
+{
+    int res = 0;
+
+    bool aniso = false;
+
+    // This is called before prepRun, so we need to determine the anisotropic modes independently here.
+    // It cannot be done earlier.
+    // set (an-)isotropic integration mode
+    switch (m_aniso_mode)
+    {
+        case Anisotropic:
+            aniso = true;
+            break;
+            case Automatic:
+                default:
+                    aniso = getAnisotropicMode();
+                    break;
+    }
+
+    m_exec_conf->msg->notice(8) << "MultipleTimestepIntegrator: Setting anisotropic mode = " << aniso << std::endl;
+
+    if (aniso)
+    {
+        unsigned int group_size = group->getNumMembers();
+        unsigned int group_dof = 0;
+        unsigned int dimension = m_sysdef->getNDimensions();
+        unsigned int dof_one;
+        ArrayHandle<Scalar3> h_moment_intertia(m_pdata->getMomentsOfIntertiaArray(), access_location::host, access_mode::read);
+
+        for (unsigned int group_idx = 0; group_idx < group_size; group_idx++) {
+            unsigned int j = group->getMemberIndex(group_idx);
+            if (dimension == 3) {
+                dof_one = 3;
+                if (fabs(h_moment_intertia.data[j].x) < EPSILON) {
+                    dof_one--;
+                }
+                if (fabs(h_moment_intertia.data[j].y) < EPSILON) {
+                    dof_one--;
+                }
+                if (fabs(h_moment_intertia.data[j].z) < EPSILON) {
+                    dof_one--;
+                }
+            }
+            else {
+                dof_one = 1;
+                if (fabs(h_moment_inertia.data[j].z) < EPSILON) {
+                    dof_one--;
+                }
+            }
+            group_dof += dof_one;
+        }
+#ifdef ENABLE_MPI
+        if (m_pdata->getDomainDecomposition()) {
+            MPI_Allreduce(MPI_IN_PLACE, &group_dof, 1, MPI_UNSIGNED, MPI_SUM, m_exec_conf->getMPICommunicator());
+        }
+#endif
+        res += group_dof;
+    }
+
+    return res;
+}
+
+/*! Set the anisotropic mode of the integrator
+ */
+void MultipleTimestepIntegrator::setAnisotropicMode(AnisotropicMode mode) {
+    m_aniso_mode = mode;
+}
+
+/*! get the anisotropic mode of the integrator
+ */
+AnisotropicMode MultipleTimestepIntegrator::getAnisotropicMode() {
+    return m_aniso_mode;
+}
+
 /* Add a new force/frequency pair to the integrator.
  *
  */
@@ -224,6 +308,8 @@ void export_MultipleTimestepIntegrator(pybind11::module& m)
 {
     pybind11::class_<MultipleTimestepIntegrator, Integrator, std::shared_ptr<MultipleTimestepIntegrator>>(m, "MultipleTimestepIntegrator")
     .def(py::init<std::shared_ptr<SystemDefinition>, Scalar>())
+    .def("getNDOF", &MultipleTimestepIntegrator::getNDOF)
+    .def("getRotationalNDOF", &MultipleTimestepIntegrator::getRotationalNDOF)
     .def("addForce", &MultipleTimestepIntegrator::addForce);
 }
 
