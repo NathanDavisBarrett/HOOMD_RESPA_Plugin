@@ -21,6 +21,7 @@ See 'mode_respa' for more details.
 
 from hoomd import _hoomd
 from hoomd.md import _md
+from hoomd.multiple_timestep_plugin import _multiple_timestep_plugin
 import hoomd;
 from hoomd.integrate import _integrator
 import copy;
@@ -99,7 +100,7 @@ class mode_respa(_integrator):
         hoomd.util.print_status_line();
 
         # initialize base class
-        _itegrator.__init__(self);
+        _integrator.__init__(self);
 
         # Store metadata
         self.dt = dt
@@ -108,7 +109,7 @@ class mode_respa(_integrator):
         self.metadata_fields = ['dt', 'forceFreqPairs', 'aniso']
 
         # initialize the reflected c++ class
-        self.cpp_integrator = multiple_timestep_plugin.MultipleTimestepIntegrator(hoomd.context.system_definition, dt);
+        self.cpp_integrator = _multiple_timestep_plugin.MultipleTimestepIntegrator(hoomd.context.current.system_definition, dt);
         self.supports_methods = False;
 
         hoomd.context.current.system.setIntegrator(self.cpp_integrator);
@@ -162,11 +163,16 @@ class mode_respa(_integrator):
         force, freq = forceFreqPair
         cpp_force = force.cpp_force
 
-        if force.log or force.enabled:
-            force.update_coeff();
-
         if force.enabled:
             self.cpp_integrator.addForce(cpp_force, freq)
 
     def update_forces(self):
-        warnings.warn("WARNING: update_forces() is not used in the mode_respa class but is still being called.")
+        self.check_initialization();
+
+        for f in hoomd.context.current.forces:
+            if f.cpp_force is None:
+                hoomd.context.msg.error('Bug in hoomd.integrate: cpp_force not set, please report\n');
+                raise RuntimeError('Error updating forces');
+
+            if f.log or f.enabled:
+                f.update_coeffs();

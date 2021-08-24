@@ -4,6 +4,11 @@
 
 #include "MultipleTimestepIntegrator.h"
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cmath>
+
 namespace py = pybind11;
 
 #ifdef ENABLE_HIP
@@ -22,6 +27,7 @@ namespace py = pybind11;
 MultipleTimestepIntegrator::MultipleTimestepIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
 : Integrator(sysdef, deltaT), m_prepared(false), m_aniso_mode(Automatic) {
     m_exec_conf->msg->notice(5) << "Constructing MultipleTimestepIntegrator" << std::endl;
+    //m_exec_conf->msg->warning() << "Constructing MultipleTimestepIntegrator:" << this << std::endl;
 }
 
 MultipleTimestepIntegrator::~MultipleTimestepIntegrator() {
@@ -77,6 +83,8 @@ void MultipleTimestepIntegrator::addSubstep(int stepType, std::shared_ptr<ForceC
 /*! Create the substeps needed for each loop and subloop in the RESPA algorithm.
 */
 void MultipleTimestepIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> forceGroups, int parentSubsteps) {
+    //m_exec_conf->msg->warning() << "createSubsteps called" << std::endl;
+
     std::pair<std::shared_ptr<ForceCompute>, int> topGroup = forceGroups.at(0);
 
     std::shared_ptr<ForceCompute> topForce = topGroup.first;
@@ -108,7 +116,9 @@ void MultipleTimestepIntegrator::createSubsteps(std::vector<std::pair<std::share
 
 /*! Prepare for the run.
 */
-void MultipleTimestepIntegrator::prepRun(uint64_t timestep) {
+void MultipleTimestepIntegrator::prepRun(unsigned int timestep) {
+    //m_exec_conf->msg->warning() << "MultipleTimestepIntegrator prepRun called" << std::endl;
+
     //First, make sure the vector of ForceComputes are organized to put the least frequent force at the front, and the most frequent force at the back.
     struct SortHelper {
         inline bool operator() (const std::pair<std::shared_ptr<ForceCompute>, int> pair1, const std::pair<std::shared_ptr<ForceCompute>, int> pair2) {
@@ -122,14 +132,30 @@ void MultipleTimestepIntegrator::prepRun(uint64_t timestep) {
     MultipleTimestepIntegrator::createSubsteps(m_respa_forces, 1);
 
     m_prepared = true;
+
+    m_exec_conf->msg->warning() << "Initial Positions/Velocities:" << std::endl;
+
+    ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
+                               access_location::host,
+                               access_mode::readwrite);
+
+    ArrayHandle<Scalar4> h_pos(m_pdata->getPositions(),
+                               access_location::host,
+                               access_mode::readwrite);
+
+    for (unsigned int i = 0; i < m_pdata->getN(); i++) {
+        //m_exec_conf->msg->warning() << i << " x: " << h_pos.data[i].x << " y: " << h_pos.data[i].y << " z: " << h_pos.data[i].z << " vx: " << h_vel.data[i].x << " vy: " << h_vel.data[i].y << " vz: " << h_vel.data[i].z << "\n";
+    }
+
 }
 
 /*! Perform the needed calculations according to the RESPA algorithm
     \param timestep Current time step of the simulation (i.e. the timestep number??)
 */
-void MultipleTimestepIntegrator::update(uint64_t timestep)
+void MultipleTimestepIntegrator::update(unsigned int timestep)
 {
     Integrator::update(timestep);
+    //m_exec_conf->msg->warning() << "TIMESTEP: " << timestep << std::endl;
 
     // ensure that prepRun() has been called
     assert(m_prepared);
@@ -146,17 +172,20 @@ void MultipleTimestepIntegrator::update(uint64_t timestep)
                                access_location::host,
                                access_mode::readwrite);
 
-    // IMPLEMENT RESPA ALGORITHM HERE.
-    // TODO:
-    // Make the initializer function to set up the pattern at which to execute the steps.
-    // Learn how to access and execute ForceComputes. (Do a search algorithm on ForceCompute.h, see where it's used and how to determine what kind of data object a "force" (such as LJ) is.)
-    //     Use force->compute(timestep); See Integrator.cc, computeNetForce() for an example.
-    //     But how do you add a new force!? I'm gonna need to override that to mandate a frequency along with the force.
+    //m_exec_conf->msg->warning() << "\tThere are " << m_respa_step_types.size() << " respa steps to execute." << std::endl;
 
     for (unsigned int i = 0; i < m_respa_step_types.size(); i++) {
+        //m_exec_conf->msg->warning() << "\tRespaStep #" << i << ":" << std::endl;
+
+        //m_exec_conf->msg->warning() << "\t\tPositions/Velocities:" << "\n";
+
+//        for (unsigned int i = 0; i < m_pdata->getN(); i++) {
+//            m_exec_conf->msg->warning() << "\t\t\t" << i << " x: " << h_pos.data[i].x << " y: " << h_pos.data[i].y << " z: " << h_pos.data[i].z << " vx: " << h_vel.data[i].x << " vy: " << h_vel.data[i].y << " vz: " << h_vel.data[i].z << "\n";
+//        }
 
         int stepType = m_respa_step_types.at(i);
         if (stepType == VEL_STEP) {
+            //m_exec_conf->msg->warning() << "\t\tVEL_STEP" << std::endl;
             std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
             Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
 
@@ -166,14 +195,49 @@ void MultipleTimestepIntegrator::update(uint64_t timestep)
 
             forceCompute->compute(timestep);
 
+            ArrayHandle<Scalar4>  h_force(forceCompute->getForceArray(),
+                                          access_location::host,
+                                          access_mode::read);
+
+            Scalar minForce = NULL;
+            Scalar maxForce = NULL;
+            Scalar avgForce = 0.0;
+
+
             for (unsigned int i = 0; i < m_pdata->getN(); i++) {
-                Scalar3 force = forceCompute->getForce(i);
-                h_vel.data[i].x = h_vel.data[i].x + forceScalingFactor * force.x / h_vel.data[i].w; //The "w" is the particle mass. For another example of this usage, see ParticleData::getMass
-                h_vel.data[i].y = h_vel.data[i].y + forceScalingFactor * force.y / h_vel.data[i].w;
-                h_vel.data[i].z = h_vel.data[i].z + forceScalingFactor * force.z / h_vel.data[i].z;
+                Scalar forceX = h_force.data[i].x;
+                Scalar forceY = h_force.data[i].y;
+                Scalar forceZ = h_force.data[i].z;
+
+                Scalar forceMag = pow((double)(forceX*forceX + forceY*forceY + forceZ*forceZ),0.5);
+
+                if (maxForce == NULL) {
+                    maxForce = forceMag;
+                }
+                else if (forceMag > maxForce) {
+                    maxForce = forceMag;
+                }
+
+                if (minForce == NULL) {
+                    minForce = forceMag;
+                }
+                else if (forceMag < minForce) {
+                    minForce = forceMag;
+                }
+
+                avgForce = ((avgForce * (double)i) + forceMag) / ((double)(i+1));
+
+                h_vel.data[i].x = h_vel.data[i].x + forceScalingFactor * forceX / h_vel.data[i].w; //The "w" is the particle mass. For another example of this usage, see ParticleData::getMass
+                h_vel.data[i].y = h_vel.data[i].y + forceScalingFactor * forceY / h_vel.data[i].w;
+                h_vel.data[i].z = h_vel.data[i].z + forceScalingFactor * forceZ / h_vel.data[i].w;
             }
+
+            //m_exec_conf->msg->warning() << "\t\tminForce: " << minForce << std::endl;
+            //m_exec_conf->msg->warning() << "\t\tmaxForce: " << maxForce << std::endl;
+            //m_exec_conf->msg->warning() << "\t\tavgForce: " << avgForce << std::endl;
         }
         else if (stepType == POS_STEP) {
+            //m_exec_conf->msg->warning() << "\t\tPOS_STEP" << std::endl;
             Scalar velScalingFactor = m_respa_step_vel_scaling_factors.at(i);
 
             ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
@@ -184,12 +248,42 @@ void MultipleTimestepIntegrator::update(uint64_t timestep)
                                        access_location::host,
                                        access_mode::readwrite);
 
+            Scalar maxD = NULL;
+            Scalar minD = NULL;
+            Scalar avgD = NULL;
+
             for (unsigned int i = 0; i < m_pdata->getN(); i++)
             {
+                Scalar dx = velScalingFactor * h_vel.data[i].x;
+                Scalar dy = velScalingFactor * h_vel.data[i].y;
+                Scalar dz = velScalingFactor * h_vel.data[i].z;
+
+                Scalar d = pow((double)(dx*dx + dy*dy + dz*dz),0.5);
+
+                if (maxD == NULL) {
+                    maxD = d;
+                }
+                else if (d > maxD){
+                    maxD = d;
+                }
+
+                if (minD == NULL) {
+                    minD = d;
+                }
+                else if (d < minD) {
+                    minD = d;
+                }
+
+                avgD = (avgD*((double)i) + d) / ((double)(i+1));
+
                 h_pos.data[i].x = h_pos.data[i].x + velScalingFactor * h_vel.data[i].x;
                 h_pos.data[i].y = h_pos.data[i].y + velScalingFactor * h_vel.data[i].y;
                 h_pos.data[i].z = h_pos.data[i].z + velScalingFactor * h_vel.data[i].z;
             }
+
+            //m_exec_conf->msg->warning() << "\t\tminD: " << minD << std::endl;
+            //m_exec_conf->msg->warning() << "\t\tmaxD: " << maxD << std::endl;
+            //m_exec_conf->msg->warning() << "\t\tavgD: " << avgD << std::endl;
         }
         else {
             throw std::invalid_argument(std::to_string(stepType) + " is not a valid stepType");
@@ -295,6 +389,7 @@ bool MultipleTimestepIntegrator::getAnisotropicMode() {
  *
  */
 void MultipleTimestepIntegrator::addForce(std::shared_ptr<ForceCompute> force, int frequency) {
+    //m_exec_conf->msg->warning() << "addForce called" << std::endl;
     std::pair<std::shared_ptr<ForceCompute>, int> newForce;
     newForce.first = force;
     newForce.second = frequency;

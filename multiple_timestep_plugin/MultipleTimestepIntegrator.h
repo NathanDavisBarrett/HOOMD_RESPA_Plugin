@@ -12,6 +12,7 @@
 #include <hoomd/Integrator.h>
 #include <vector>
 #include <utility> //std::pair
+#include <string>
 
 // pybind11 is used to create the python bindings to the C++ object,
 // but not if we are compiling GPU kernels
@@ -66,7 +67,7 @@ class MultipleTimestepIntegrator : public Integrator
             ~MultipleTimestepIntegrator();
 
             //! Take one timestep forward
-            void update(uint64_t timestep);
+            void update(unsigned int timestep);
 
             /// Sets the profiler for the compute to use
             void setProfiler(std::shared_ptr<Profiler> prof);
@@ -95,10 +96,10 @@ class MultipleTimestepIntegrator : public Integrator
             void createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>>, int);
 
             /// Prepare for the run
-            void prepRun(uint64_t timestep);
+            void prepRun(unsigned int timestep);
 
             /// helper function to compute net force/virial
-            void computeNetForce(uint64_t timestep);
+            void computeNetForce(unsigned int timestep);
 
             /// Add a new force/frequency pair.
             void addForce(std::shared_ptr<ForceCompute>, int);
