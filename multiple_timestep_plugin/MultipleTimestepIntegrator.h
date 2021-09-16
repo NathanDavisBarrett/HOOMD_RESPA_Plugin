@@ -14,6 +14,8 @@
 #include <utility> //std::pair
 #include <string>
 
+#include "RespaForceCompute.h"
+
 // pybind11 is used to create the python bindings to the C++ object,
 // but not if we are compiling GPU kernels
 #ifndef __HIPCC__
@@ -32,13 +34,13 @@
 class MultipleTimestepIntegrator : public Integrator
         {
         private:
-            std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> m_respa_forces;
+            std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>> m_respa_forces;
 
             const int VEL_STEP = 0;
             const int POS_STEP = 1;
 
             std::vector<int> m_respa_step_types;
-            std::vector<std::shared_ptr<ForceCompute>> m_respa_step_force_computes;
+            std::vector<std::shared_ptr<RespaForceCompute>> m_respa_step_force_computes;
             std::vector<Scalar> m_respa_step_force_scaling_factors;
             std::vector<Scalar> m_respa_step_vel_scaling_factors;
 
