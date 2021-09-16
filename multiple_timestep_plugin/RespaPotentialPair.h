@@ -201,130 +201,17 @@ PotentialPair< evaluator >::~PotentialPair()
     m_exec_conf->msg->notice(5) << "Destroying RespaPotentialPair<" << evaluator::getName() << ">" << std::endl;
 }
 
-###STOPPED HERE, continue eliminating the things that can be inherited from PotentialPair.
-
-/*! \param typ1 First type index in the pair
-    \param typ2 Second type index in the pair
-    \param param Parameter to set
-    \note When setting the value for (\a typ1, \a typ2), the parameter for (\a typ2, \a typ1) is automatically
-          set.
-*/
-template< class evaluator >
-void PotentialPair< evaluator >::setParams(unsigned int typ1, unsigned int typ2, const param_type& param)
-{
-    if (typ1 >= m_pdata->getNTypes() || typ2 >= m_pdata->getNTypes())
-    {
-        this->m_exec_conf->msg->error() << "pair." << evaluator::getName() << ": Trying to set pair params for a non existent type! "
-                                        << typ1 << "," << typ2 << std::endl;
-        throw std::runtime_error("Error setting parameters in PotentialPair");
-    }
-
-    ArrayHandle<param_type> h_params(m_params, access_location::host, access_mode::readwrite);
-    h_params.data[m_typpair_idx(typ1, typ2)] = param;
-    h_params.data[m_typpair_idx(typ2, typ1)] = param;
-}
-
-/*! \param typ1 First type index in the pair
-    \param typ2 Second type index in the pair
-    \param rcut Cutoff radius to set
-    \note When setting the value for (\a typ1, \a typ2), the parameter for (\a typ2, \a typ1) is automatically
-          set.
-*/
-template< class evaluator >
-void PotentialPair< evaluator >::setRcut(unsigned int typ1, unsigned int typ2, Scalar rcut)
-{
-    m_exec_conf->msg->warning() << "PotentialPair.h setRcut" << std::endl;
-    if (typ1 >= m_pdata->getNTypes() || typ2 >= m_pdata->getNTypes())
-    {
-        this->m_exec_conf->msg->error() << "pair." << evaluator::getName() << ": Trying to set rcut for a non existent type! "
-                                        << typ1 << "," << typ2 << std::endl;
-        throw std::runtime_error("Error setting parameters in PotentialPair");
-    }
-
-    ArrayHandle<Scalar> h_rcutsq(m_rcutsq, access_location::host, access_mode::readwrite);
-    h_rcutsq.data[m_typpair_idx(typ1, typ2)] = rcut * rcut;
-    h_rcutsq.data[m_typpair_idx(typ2, typ1)] = rcut * rcut;
-}
-
-/*! \param typ1 First type index in the pair
-    \param typ2 Second type index in the pair
-    \param ron XPLOR r_on radius to set
-    \note When setting the value for (\a typ1, \a typ2), the parameter for (\a typ2, \a typ1) is automatically
-          set.
-*/
-template< class evaluator >
-void PotentialPair< evaluator >::setRon(unsigned int typ1, unsigned int typ2, Scalar ron)
-{
-    if (typ1 >= m_pdata->getNTypes() || typ2 >= m_pdata->getNTypes())
-    {
-        this->m_exec_conf->msg->error() << "pair." << evaluator::getName() << ": Trying to set ron for a non existent type! "
-                                        << typ1 << "," << typ2 << std::endl;
-        throw std::runtime_error("Error setting parameters in PotentialPair");
-    }
-
-    ArrayHandle<Scalar> h_ronsq(m_ronsq, access_location::host, access_mode::readwrite);
-    h_ronsq.data[m_typpair_idx(typ1, typ2)] = ron * ron;
-    h_ronsq.data[m_typpair_idx(typ2, typ1)] = ron * ron;
-}
-
-template <class evaluator>
-void PotentialPair<evaluator>::connectGSDShapeSpec(std::shared_ptr<GSDDumpWriter> writer)
-{
-    typedef hoomd::detail::SharedSignalSlot<int(gsd_handle&)> SlotType;
-    auto func = std::bind(&PotentialPair<evaluator>::slotWriteGSDShapeSpec, this, std::placeholders::_1);
-    std::shared_ptr<hoomd::detail::SignalSlot> pslot( new SlotType(writer->getWriteSignal(), func));
-    addSlot(pslot);
-}
-
-template <class evaluator>
-int PotentialPair<evaluator>::slotWriteGSDShapeSpec(gsd_handle& handle) const
-{
-    GSDShapeSpecWriter shapespec(m_exec_conf);
-    m_exec_conf->msg->notice(10) << "PotentialPair writing to GSD File to name: " << shapespec.getName() << std::endl;
-    int retval = shapespec.write(handle, this->getTypeShapeMapping(m_params));
-    return retval;
-}
-
-/*! PotentialPair provides:
-     - \c pair_"name"_energy
-    where "name" is replaced with evaluator::getName()
-*/
-template< class evaluator >
-std::vector< std::string > PotentialPair< evaluator >::getProvidedLogQuantities()
-{
-    std::vector<std::string> list;
-    list.push_back(m_log_name);
-    return list;
-}
-
-/*! \param quantity Name of the log value to get
-    \param timestep Current timestep of the simulation
-*/
-template< class evaluator >
-Scalar PotentialPair< evaluator >::getLogValue(const std::string& quantity, unsigned int timestep)
-{
-    if (quantity == m_log_name)
-    {
-        compute(timestep);
-        return calcEnergySum();
-    }
-    else
-    {
-        this->m_exec_conf->msg->error() << "pair." << evaluator::getName() << ": " << quantity << " is not a valid log quantity"
-                                        << std::endl;
-        throw std::runtime_error("Error getting log value");
-    }
-}
-
 /*! \post The pair forces are computed for the given timestep. The neighborlist's compute method is called to ensure
     that it is up to date before proceeding.
+
+    RESPA Edit: This is the same function as defined in PotentialPair.h, the only difference is that here, only the
+    particles in the specified group will be itterated over.
 
     \param timestep specifies the current time step of the simulation
 */
 template< class evaluator >
 void PotentialPair< evaluator >::computeForces(unsigned int timestep)
 {
-    m_exec_conf->msg->warning() << "PotentialPair.h computeForces" << std::endl;
     // start by updating the neighborlist
     m_nlist->compute(timestep);
 
@@ -365,8 +252,12 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
     memset((void*)h_virial.data,0,sizeof(Scalar)*m_virial.getNumElements());
 
     // for each particle
-    for (int i = 0; i < (int)m_pdata->getN(); i++)
+    for (int groupi = 0; groupi < (int)m_group->getNumMembersGlobal(); groupi++)
     {
+        // Extract the actual particle index from the group index and assign it to "i"
+        int tagi = m_group->getMemberTag(groupi);
+        i = m_rtag[tagi];
+
         // access the particle's position and type (MEM TRANSFER: 4 scalars)
         Scalar3 pi = make_scalar3(h_pos.data[i].x, h_pos.data[i].y, h_pos.data[i].z);
         unsigned int typei = __scalar_as_int(h_pos.data[i].w);
@@ -400,6 +291,11 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
             // access the index of this neighbor (MEM TRANSFER: 1 scalar)
             unsigned int j = h_nlist.data[myHead + k];
             assert(j < m_pdata->getN() + m_pdata->getNGhosts());
+
+            // If the nighboring particle is not in the group, continue.
+            if (!(m_group->isMember(j))) {
+                continue;
+            }
 
             // calculate dr_ji (MEM TRANSFER: 3 scalars / FLOPS: 3)
             Scalar3 pj = make_scalar3(h_pos.data[j].x, h_pos.data[j].y, h_pos.data[j].z);
@@ -454,8 +350,6 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
                 eval.setCharge(qi, qj);
 
             bool evaluated = eval.evalForceAndEnergy(force_divr, pair_eng, energy_shift);
-
-            m_exec_conf->msg->warning() << "Eval:" << evaluated << std::endl;
 
             if (evaluated)
             {
@@ -542,221 +436,14 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
     if (m_prof) m_prof->pop();
 }
 
-#ifdef ENABLE_MPI
-/*! \param timestep Current time step
- */
-template < class evaluator >
-CommFlags PotentialPair< evaluator >::getRequestedCommFlags(unsigned int timestep)
-    {
-    CommFlags flags = CommFlags(0);
-
-    if (evaluator::needsCharge())
-        flags[comm_flag::charge] = 1;
-
-    if (evaluator::needsDiameter())
-        flags[comm_flag::diameter] = 1;
-
-    flags |= ForceCompute::getRequestedCommFlags(timestep);
-
-    return flags;
-    }
-#endif
-
-
-//! function to compute the energy between two lists of particles.
-//! strictly speaking tags1 and tags2 should be disjoint for the result to make any sense.
-//! \param energy is the sum of the energies between all particles in tags1 and tags2, U = \sum_{i \in tags1, j \in tags2} u_{ij}.
-template< class evaluator >
-template< class InputIterator >
-inline void PotentialPair< evaluator >::computeEnergyBetweenSets(   InputIterator first1, InputIterator last1,
-                                                                    InputIterator first2, InputIterator last2,
-                                                                    Scalar& energy )
-{
-    // start the profile for this compute
-    if (m_prof) m_prof->push(m_prof_name);
-
-    if( first1 == last1 || first2 == last2 )
-        return;
-
-#ifdef ENABLE_MPI
-    if (m_comm)
-        {
-        // temporarily add tag comm flag
-        CommFlags old_flags = m_comm->getFlags();
-        CommFlags new_flags = old_flags;
-        new_flags[comm_flag::tag] = 1;
-        m_comm->setFlags(new_flags);
-
-        // force communication
-        m_comm->migrateParticles();
-        m_comm->exchangeGhosts();
-
-        // reset the old flags
-        m_comm->setFlags(old_flags);
-        }
-#endif
-
-    energy = Scalar(0.0);
-
-    ArrayHandle<Scalar4> h_pos(m_pdata->getPositions(), access_location::host, access_mode::read);
-    ArrayHandle< unsigned int > h_rtags(m_pdata->getRTags(), access_location::host, access_mode::read);
-    ArrayHandle<Scalar> h_diameter(m_pdata->getDiameters(), access_location::host, access_mode::read);
-    ArrayHandle<Scalar> h_charge(m_pdata->getCharges(), access_location::host, access_mode::read);
-
-    const BoxDim& box = m_pdata->getGlobalBox();
-    ArrayHandle<Scalar> h_ronsq(m_ronsq, access_location::host, access_mode::read);
-    ArrayHandle<Scalar> h_rcutsq(m_rcutsq, access_location::host, access_mode::read);
-    ArrayHandle<param_type> h_params(m_params, access_location::host, access_mode::read);
-
-    // for each particle in tags1
-    while (first1 != last1)
-    {
-        unsigned int i = h_rtags.data[*first1]; first1++;
-        if (i >= m_pdata->getN()) // not owned by this processor.
-            continue;
-        // access the particle's position and type (MEM TRANSFER: 4 scalars)
-        Scalar3 pi = make_scalar3(h_pos.data[i].x, h_pos.data[i].y, h_pos.data[i].z);
-        unsigned int typei = __scalar_as_int(h_pos.data[i].w);
-
-        // sanity check
-        assert(typei < m_pdata->getNTypes());
-
-        // access diameter and charge (if needed)
-        Scalar di = Scalar(0.0);
-        Scalar qi = Scalar(0.0);
-        if (evaluator::needsDiameter())
-            di = h_diameter.data[i];
-        if (evaluator::needsCharge())
-            qi = h_charge.data[i];
-
-        // loop over all particles in tags2
-        for (InputIterator iter = first2; iter != last2; ++iter)
-        {
-            // access the index of this neighbor (MEM TRANSFER: 1 scalar)
-            unsigned int j = h_rtags.data[*iter];
-            if (j >= m_pdata->getN() + m_pdata->getNGhosts()) // not on this processor at all
-                continue;
-            // calculate dr_ji (MEM TRANSFER: 3 scalars / FLOPS: 3)
-            Scalar3 pj = make_scalar3(h_pos.data[j].x, h_pos.data[j].y, h_pos.data[j].z);
-            Scalar3 dx = pi - pj;
-
-            // access the type of the neighbor particle (MEM TRANSFER: 1 scalar)
-            unsigned int typej = __scalar_as_int(h_pos.data[j].w);
-            assert(typej < m_pdata->getNTypes());
-
-            // access diameter and charge (if needed)
-            Scalar dj = Scalar(0.0);
-            Scalar qj = Scalar(0.0);
-            if (evaluator::needsDiameter())
-                dj = h_diameter.data[j];
-            if (evaluator::needsCharge())
-                qj = h_charge.data[j];
-
-            // apply periodic boundary conditions
-            dx = box.minImage(dx);
-
-            // calculate r_ij squared (FLOPS: 5)
-            Scalar rsq = dot(dx, dx);
-
-            // get parameters for this type pair
-            unsigned int typpair_idx = m_typpair_idx(typei, typej);
-            param_type param = h_params.data[typpair_idx];
-            Scalar rcutsq = h_rcutsq.data[typpair_idx];
-            Scalar ronsq = Scalar(0.0);
-            if (m_shift_mode == xplor)
-                ronsq = h_ronsq.data[typpair_idx];
-
-            // design specifies that energies are shifted if
-            // 1) shift mode is set to shift
-            // or 2) shift mode is explor and ron > rcut
-            bool energy_shift = false;
-            if (m_shift_mode == shift)
-                energy_shift = true;
-            else if (m_shift_mode == xplor)
-            {
-                if (ronsq > rcutsq)
-                    energy_shift = true;
-            }
-
-            // compute the force and potential energy
-            Scalar force_divr = Scalar(0.0);
-            Scalar pair_eng = Scalar(0.0);
-            evaluator eval(rsq, rcutsq, param);
-            if (evaluator::needsDiameter())
-                eval.setDiameter(di, dj);
-            if (evaluator::needsCharge())
-                eval.setCharge(qi, qj);
-
-            bool evaluated = eval.evalForceAndEnergy(force_divr, pair_eng, energy_shift);
-
-            if (evaluated)
-            {
-                // modify the potential for xplor shifting
-                if (m_shift_mode == xplor)
-                {
-                    if (rsq >= ronsq && rsq < rcutsq)
-                    {
-                        // Implement XPLOR smoothing (FLOPS: 16)
-                        Scalar old_pair_eng = pair_eng;
-                        Scalar old_force_divr = force_divr;
-
-                        // calculate 1.0 / (xplor denominator)
-                        Scalar xplor_denom_inv =
-                                Scalar(1.0) / ((rcutsq - ronsq) * (rcutsq - ronsq) * (rcutsq - ronsq));
-
-                        Scalar rsq_minus_r_cut_sq = rsq - rcutsq;
-                        Scalar s = rsq_minus_r_cut_sq * rsq_minus_r_cut_sq *
-                                   (rcutsq + Scalar(2.0) * rsq - Scalar(3.0) * ronsq) * xplor_denom_inv;
-                        Scalar ds_dr_divr = Scalar(12.0) * (rsq - ronsq) * rsq_minus_r_cut_sq * xplor_denom_inv;
-
-                        // make modifications to the old pair energy and force
-                        pair_eng = old_pair_eng * s;
-                        // note: I'm not sure why the minus sign needs to be there: my notes have a +
-                        // But this is verified correct via plotting
-                        force_divr = s * old_force_divr - ds_dr_divr * old_pair_eng;
-                    }
-                }
-                energy += pair_eng;
-            }
-        }
-    }
-#ifdef ENABLE_MPI
-    if (this->m_pdata->getDomainDecomposition())
-        {
-        MPI_Allreduce(MPI_IN_PLACE, &energy, 1, MPI_HOOMD_SCALAR, MPI_SUM, m_exec_conf->getMPICommunicator());
-        }
-#endif
-
-    if (m_prof) m_prof->pop();
-}
-
-//! Calculates the energy between two lists of particles.
-template < class evaluator >
-Scalar PotentialPair< evaluator >::computeEnergyBetweenSetsPythonList(  pybind11::array_t<int, pybind11::array::c_style> tags1,
-                                                                        pybind11::array_t<int, pybind11::array::c_style> tags2 )
-{
-    Scalar eng = 0.0;
-    if (tags1.ndim() != 1)
-        throw std::domain_error("error: ndim != 2");
-    unsigned int* itags1 = (unsigned int*)tags1.mutable_data();
-
-    if (tags2.ndim() != 1)
-        throw std::domain_error("error: ndim != 2");
-    unsigned int* itags2 = (unsigned int*)tags2.mutable_data();
-    computeEnergyBetweenSets(   itags1, itags1 + tags1.size(),
-                                itags2, itags2 + tags2.size(),
-                                eng);
-    return eng;
-}
-
 //! Export this pair potential to python
 /*! \param name Name of the class in the exported python module
     \tparam T Class type to export. \b Must be an instantiated PotentialPair class template.
 */
-template < class T > void export_PotentialPair(pybind11::module& m, const std::string& name)
+template < class T > void export_RespaPotentialPair(pybind11::module& m, const std::string& name)
 {
-    pybind11::class_<T, std::shared_ptr<T> > potentialpair(m, name.c_str(), pybind11::base<ForceCompute>());
-    potentialpair.def(pybind11::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<NeighborList>, const std::string& >())
+    pybind11::class_<T, std::shared_ptr<T> > respapotentialpair(m, name.c_str(), pybind11::base<ForceCompute>());
+    potentialpair.def(pybind11::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<NeighborList>, std::shared_ptr <ParticleGroup>, const std::string& >())
     .def("setParams", &T::setParams)
             .def("setRcut", &T::setRcut)
             .def("setRon", &T::setRon)
@@ -766,7 +453,7 @@ template < class T > void export_PotentialPair(pybind11::module& m, const std::s
             .def("connectGSDShapeSpec", &T::connectGSDShapeSpec)
             ;
 
-    pybind11::enum_<typename T::energyShiftMode>(potentialpair,"energyShiftMode")
+    pybind11::enum_<typename T::energyShiftMode>(respapotentialpair,"energyShiftMode")
             .value("no_shift", T::energyShiftMode::no_shift)
             .value("shift", T::energyShiftMode::shift)
             .value("xplor", T::energyShiftMode::xplor)
@@ -775,4 +462,4 @@ template < class T > void export_PotentialPair(pybind11::module& m, const std::s
 }
 
 
-#endif // __POTENTIAL_PAIR_H__
+#endif // __RESPA_POTENTIAL_PAIR_H__
