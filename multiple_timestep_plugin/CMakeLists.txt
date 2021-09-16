@@ -3,6 +3,7 @@ set(COMPONENT_NAME multiple_timestep_plugin)
 set(_${COMPONENT_NAME}_sources
     module.cc
     MultipleTimestepIntegrator.cc
+    RespaForceCompute.cc
         )
 
 set(_${COMPONENT_NAME}_cu_sources
