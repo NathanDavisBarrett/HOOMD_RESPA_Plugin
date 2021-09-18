@@ -95,7 +95,7 @@ class MultipleTimestepIntegrator : public Integrator
 
             void addSubstep(int stepType, std::shared_ptr<RespaForceCompute> forceCompute, int numSubsteps);
 
-            void createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>>, int);
+            void createSubsteps(std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>>, int);
 
             /// Prepare for the run
             void prepRun(unsigned int timestep);
@@ -104,7 +104,7 @@ class MultipleTimestepIntegrator : public Integrator
             void computeNetForce(unsigned int timestep);
 
             /// Add a new force/frequency pair.
-            void addForce(std::shared_ptr<ForceCompute>, int);
+            void addForce(std::shared_ptr<RespaForceCompute>, int);
 
         protected:
             AnisotropicMode m_aniso_mode; //!< Anisotropic mode for this integrator
