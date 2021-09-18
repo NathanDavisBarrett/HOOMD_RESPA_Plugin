@@ -59,6 +59,7 @@ set(files
     __init__.py
 #    multiple_timestep_plugin.py
     respa_integrator.py
+    respa_pair.py
         )
 
 install(FILES ${files}

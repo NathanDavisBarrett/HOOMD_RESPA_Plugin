@@ -19,6 +19,7 @@
 #include <hoomd/Index1D.h>
 #include <hoomd/GlobalArray.h>
 #include <hoomd/ForceCompute.h>
+#include <hoomd/PotentialPair.h>
 #include <NeighborList.h>
 #include <hoomd/GSDShapeSpecWriter.h>
 
@@ -87,7 +88,7 @@
     \sa export_PotentialPair()
 */
 template < class evaluator >
-class PotentialPair : public RespaForceCompute
+class RespaPotentialPair : public PotentialPair, public RespaForceCompute
 {
 public:
     //! Param type from evaluator
@@ -100,39 +101,6 @@ public:
                   const std::string& log_suffix="");
     //! Destructor
     virtual ~PotentialPair();
-
-    //! Set the pair parameters for a single type pair
-    virtual void setParams(unsigned int typ1, unsigned int typ2, const param_type& param);
-    //! Set the rcut for a single type pair
-    virtual void setRcut(unsigned int typ1, unsigned int typ2, Scalar rcut);
-    //! Set ron for a single type pair
-    virtual void setRon(unsigned int typ1, unsigned int typ2, Scalar ron);
-
-    //! Method that is called whenever the GSD file is written if connected to a GSD file.
-    int slotWriteGSDShapeSpec(gsd_handle&) const;
-
-    //! Method that is called to connect to the gsd write state signal
-    void connectGSDShapeSpec(std::shared_ptr<GSDDumpWriter> writer);
-
-    //! Returns a list of log quantities this compute calculates
-    virtual std::vector< std::string > getProvidedLogQuantities();
-    //! Calculates the requested log value and returns it
-    virtual Scalar getLogValue(const std::string& quantity, unsigned int timestep);
-
-#ifdef ENABLE_MPI
-    //! Get ghost particle fields requested by this pair potential
-        virtual CommFlags getRequestedCommFlags(unsigned int timestep);
-#endif
-
-    //! Calculates the energy between two lists of particles.
-    template< class InputIterator >
-    void computeEnergyBetweenSets(  InputIterator first1, InputIterator last1,
-                                    InputIterator first2, InputIterator last2,
-                                    Scalar& energy );
-    //! Calculates the energy between two lists of particles.
-    Scalar computeEnergyBetweenSetsPythonList(  pybind11::array_t<int, pybind11::array::c_style> tags1,
-                                                pybind11::array_t<int, pybind11::array::c_style> tags2);
-
 
 protected:
 
