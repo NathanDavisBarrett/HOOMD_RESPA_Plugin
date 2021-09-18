@@ -93,7 +93,7 @@ class MultipleTimestepIntegrator : public Integrator
 
             Scalar calculateVelScalingFactor(int numSubsteps);
 
-            void addSubstep(int stepType, std::shared_ptr<ForceCompute> forceCompute, int numSubsteps);
+            void addSubstep(int stepType, std::shared_ptr<RespaForceCompute> forceCompute, int numSubsteps);
 
             void createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>>, int);
 
