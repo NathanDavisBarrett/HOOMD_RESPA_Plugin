@@ -70,7 +70,7 @@ RespaForceCompute::~RespaForceCompute()
 
 void export_RespaForceCompute(py::module& m)
 {
-    py::class_< RespaForceCompute, std::shared_ptr<RespaForceCompute> >(m,"RespaForceCompute",py::base<FroceCompute>())
+    py::class_< RespaForceCompute, std::shared_ptr<RespaForceCompute> >(m,"RespaForceCompute",py::base<ForceCompute>())
             .def(py::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<ParticleGroup> >())
             .def("getForce", &ForceCompute::getForce)
             .def("getTorque", &ForceCompute::getTorque)
