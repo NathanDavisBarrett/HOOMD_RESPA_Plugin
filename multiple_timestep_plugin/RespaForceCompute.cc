@@ -29,7 +29,7 @@ namespace py = pybind11;
     \post All forces are initialized to 0
 */
 RespaForceCompute::RespaForceCompute(std::shared_ptr<SystemDefinition> sysdef, std::shared_ptr<ParticleGroup> group)
-        : ForceCompute(sysdef), m_particles_sorted(false)
+        : ForceCompute(sysdef)
 {
     m_group = group;
 }
