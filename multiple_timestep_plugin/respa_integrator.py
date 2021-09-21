@@ -94,8 +94,6 @@ class mode_respa(_integrator):
     At the moment, only NVE simulations can be done using the mode_respa integrator.
     """
 
-    #FIXME: Overwrite the parent class's update_forces function.
-
     def __init__(self,dt,forceFreqPairs,aniso=None):
         hoomd.util.print_status_line();
 

@@ -9,3 +9,4 @@
 # (here: multiple_timestep_plugin)
 
 from hoomd.multiple_timestep_plugin import respa_integrator
+from hoomd.multiple_timestep_plugin import respa_pair

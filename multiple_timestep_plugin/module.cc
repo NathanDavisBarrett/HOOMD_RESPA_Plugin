@@ -3,6 +3,9 @@
 
 // Include the defined classes that are to be exported to python
 #include "MultipleTimestepIntegrator.h"
+#include "RespaForceCompute.h"
+#include "RespaPotentialPair.h"
+#include "AllRespaPairPotentials.h"
 
 #include <hoomd/extern/pybind/include/pybind11/pybind11.h>
 
@@ -11,6 +14,8 @@
 PYBIND11_MODULE(_multiple_timestep_plugin, m)
 {
     export_MultipleTimestepIntegrator(m);
+    export_RespaForceCompute(m);
+    export_RespaPotentialPair<RespaPotentialPairLJ>(m,"RespaPotentialPairLJ");
 
 #ifdef ENABLE_HIP
     export_MultipleTimestepGPU(m);

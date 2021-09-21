@@ -19,8 +19,8 @@
 #include <hoomd/Index1D.h>
 #include <hoomd/GlobalArray.h>
 #include <hoomd/ForceCompute.h>
-#include <hoomd/PotentialPair.h>
-#include <NeighborList.h>
+#include <hoomd/md/PotentialPair.h>
+#include <hoomd/md/NeighborList.h>
 #include <hoomd/GSDShapeSpecWriter.h>
 
 #ifdef ENABLE_CUDA
