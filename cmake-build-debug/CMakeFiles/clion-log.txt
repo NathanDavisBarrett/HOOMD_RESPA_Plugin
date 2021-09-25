@@ -1,0 +1,26 @@
+/snap/clion/164/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - Unix Makefiles" /home/nathan/Documents/WORK-Chicago/MultipleTimestep/hoomdRESPA_SperatePlugin/multipleTimestepPlugin_Example_Plugin_Base
+CMake Deprecation Warning at CMakeLists.txt:2 (CMAKE_MINIMUM_REQUIRED):
+  Compatibility with CMake < 2.8.12 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+-- Python output: Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+ModuleNotFoundError: No module named 'hoomd'
+
+-- Looking for a HOOMD installation at Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+ModuleNotFoundError: No module named 'hoomd'
+
+CMake Error at FindHOOMD.cmake:46 (message):
+  Could not find hoomd installation, either set HOOMD_ROOT or set
+  PYTHON_EXECUTABLE to a python which can find hoomd
+Call Stack (most recent call first):
+  CMakeLists.txt:6 (include)
+
+
+-- Configuring incomplete, errors occurred!
+See also "/home/nathan/Documents/WORK-Chicago/MultipleTimestep/hoomdRESPA_SperatePlugin/multipleTimestepPlugin_Example_Plugin_Base/cmake-build-debug/CMakeFiles/CMakeOutput.log".
