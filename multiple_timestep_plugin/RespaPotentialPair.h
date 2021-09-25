@@ -87,8 +87,9 @@
 
     \sa export_PotentialPair()
 */
+
 template < class evaluator >
-class RespaPotentialPair : public PotentialPair, public RespaForceCompute
+class RespaPotentialPair: public PotentialPair<evaluator>, public RespaForceCompute
 {
 public:
     //! Param type from evaluator
@@ -97,10 +98,10 @@ public:
     //! Construct the pair potential
     RespaPotentialPair(std::shared_ptr<SystemDefinition> sysdef,
                   std::shared_ptr<NeighborList> nlist,
-                  std::shared_ptr <ParticleGroup> group
+                  std::shared_ptr <ParticleGroup> group,
                   const std::string& log_suffix="");
     //! Destructor
-    virtual ~PotentialPair();
+    virtual ~RespaPotentialPair();
 
 protected:
 
@@ -118,22 +119,22 @@ RespaPotentialPair< evaluator >::RespaPotentialPair(std::shared_ptr<SystemDefini
                                           std::shared_ptr<NeighborList> nlist,
                                           std::shared_ptr <ParticleGroup> group,
                                           const std::string& log_suffix)
-        : RespaForceCompute(sysdef, group), m_nlist(nlist), m_shift_mode(no_shift), m_typpair_idx(m_pdata->getNTypes())
+        : PotentialPair<evaluator>(sysdef,nlist,log_suffix), RespaForceCompute(sysdef, group)
 {
     m_exec_conf->msg->notice(5) << "Constructing RespaPotentialPair<" << evaluator::getName() << ">" << std::endl;
 
     assert(m_pdata);
     assert(m_nlist);
 
-    GlobalArray<Scalar> rcutsq(m_typpair_idx.getNumElements(), m_exec_conf);
-    m_rcutsq.swap(rcutsq);
+    GlobalArray<Scalar> rcutsq(this->m_typpair_idx.getNumElements(), m_exec_conf);
+    this->m_rcutsq.swap(rcutsq);
 
 
 
-    GlobalArray<Scalar> ronsq(m_typpair_idx.getNumElements(), m_exec_conf);
-    m_ronsq.swap(ronsq);
-    GlobalArray<param_type> params(m_typpair_idx.getNumElements(), m_exec_conf);
-    m_params.swap(params);
+    GlobalArray<Scalar> ronsq(this->m_typpair_idx.getNumElements(), m_exec_conf);
+    this->m_ronsq.swap(ronsq);
+    GlobalArray<param_type> params(this->m_typpair_idx.getNumElements(), m_exec_conf);
+    this->m_params.swap(params);
 
 #ifdef ENABLE_CUDA
     if (m_pdata->getExecConf()->isCUDAEnabled() && m_exec_conf->allConcurrentManagedAccess())
@@ -156,15 +157,15 @@ RespaPotentialPair< evaluator >::RespaPotentialPair(std::shared_ptr<SystemDefini
 #endif
 
     // initialize name
-    m_prof_name = std::string("Pair ") + evaluator::getName();
-    m_log_name = std::string("pair_") + evaluator::getName() + std::string("_energy") + log_suffix;
+    this->m_prof_name = std::string("Pair ") + evaluator::getName();
+    this->m_log_name = std::string("pair_") + evaluator::getName() + std::string("_energy") + log_suffix;
 
     // connect to the ParticleData to receive notifications when the maximum number of particles changes
     m_pdata->getNumTypesChangeSignal().template connect<PotentialPair<evaluator>, &PotentialPair<evaluator>::slotNumTypesChange>(this);
 }
 
 template< class evaluator >
-PotentialPair< evaluator >::~PotentialPair()
+RespaPotentialPair< evaluator >::~RespaPotentialPair()
 {
     m_exec_conf->msg->notice(5) << "Destroying RespaPotentialPair<" << evaluator::getName() << ">" << std::endl;
 }
@@ -178,23 +179,23 @@ PotentialPair< evaluator >::~PotentialPair()
     \param timestep specifies the current time step of the simulation
 */
 template< class evaluator >
-void PotentialPair< evaluator >::computeForces(unsigned int timestep)
+void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 {
     // start by updating the neighborlist
-    m_nlist->compute(timestep);
+    this->m_nlist->compute(timestep);
 
     // start the profile for this compute
-    if (m_prof) m_prof->push(m_prof_name);
+    if (m_prof) m_prof->push(this->m_prof_name);
 
     // depending on the neighborlist settings, we can take advantage of newton's third law
     // to reduce computations at the cost of memory access complexity: set that flag now
-    bool third_law = m_nlist->getStorageMode() == NeighborList::half;
+    bool third_law = this->m_nlist->getStorageMode() == NeighborList::half;
 
     // access the neighbor list, particle data, and system box
-    ArrayHandle<unsigned int> h_n_neigh(m_nlist->getNNeighArray(), access_location::host, access_mode::read);
-    ArrayHandle<unsigned int> h_nlist(m_nlist->getNListArray(), access_location::host, access_mode::read);
+    ArrayHandle<unsigned int> h_n_neigh(this->m_nlist->getNNeighArray(), access_location::host, access_mode::read);
+    ArrayHandle<unsigned int> h_nlist(this->m_nlist->getNListArray(), access_location::host, access_mode::read);
 //     Index2D nli = m_nlist->getNListIndexer();
-    ArrayHandle<unsigned int> h_head_list(m_nlist->getHeadList(), access_location::host, access_mode::read);
+    ArrayHandle<unsigned int> h_head_list(this->m_nlist->getHeadList(), access_location::host, access_mode::read);
 
     ArrayHandle<Scalar4> h_pos(m_pdata->getPositions(), access_location::host, access_mode::read);
     ArrayHandle<Scalar> h_diameter(m_pdata->getDiameters(), access_location::host, access_mode::read);
@@ -208,9 +209,9 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
 
 
     const BoxDim& box = m_pdata->getGlobalBox();
-    ArrayHandle<Scalar> h_ronsq(m_ronsq, access_location::host, access_mode::read);
-    ArrayHandle<Scalar> h_rcutsq(m_rcutsq, access_location::host, access_mode::read);
-    ArrayHandle<param_type> h_params(m_params, access_location::host, access_mode::read);
+    ArrayHandle<Scalar> h_ronsq(this->m_ronsq, access_location::host, access_mode::read);
+    ArrayHandle<Scalar> h_rcutsq(this->m_rcutsq, access_location::host, access_mode::read);
+    ArrayHandle<param_type> h_params(this->m_params, access_location::host, access_mode::read);
 
     PDataFlags flags = this->m_pdata->getFlags();
     bool compute_virial = flags[pdata_flag::pressure_tensor] || flags[pdata_flag::isotropic_virial];
@@ -224,7 +225,7 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
     {
         // Extract the actual particle index from the group index and assign it to "i"
         int tagi = m_group->getMemberTag(groupi);
-        i = m_rtag[tagi];
+        int i = this->m_rtag[tagi];
 
         // access the particle's position and type (MEM TRANSFER: 4 scalars)
         Scalar3 pi = make_scalar3(h_pos.data[i].x, h_pos.data[i].y, h_pos.data[i].z);
@@ -288,21 +289,21 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
             Scalar rsq = dot(dx, dx);
 
             // get parameters for this type pair
-            unsigned int typpair_idx = m_typpair_idx(typei, typej);
+            unsigned int typpair_idx = this->m_typpair_idx(typei, typej);
             param_type param = h_params.data[typpair_idx];
             Scalar rcutsq = h_rcutsq.data[typpair_idx];
             m_exec_conf->msg->warning() << "Example rcutsq:" << rcutsq << std::endl;
             Scalar ronsq = Scalar(0.0);
-            if (m_shift_mode == xplor)
+            if (this->m_shift_mode == this->xplor)
                 ronsq = h_ronsq.data[typpair_idx];
 
             // design specifies that energies are shifted if
             // 1) shift mode is set to shift
             // or 2) shift mode is explor and ron > rcut
             bool energy_shift = false;
-            if (m_shift_mode == shift)
+            if (this->m_shift_mode == this->shift)
                 energy_shift = true;
-            else if (m_shift_mode == xplor)
+            else if (this->m_shift_mode == this->xplor)
             {
                 if (ronsq > rcutsq)
                     energy_shift = true;
@@ -322,7 +323,7 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
             if (evaluated)
             {
                 // modify the potential for xplor shifting
-                if (m_shift_mode == xplor)
+                if (this->m_shift_mode == this->xplor)
                 {
                     if (rsq >= ronsq && rsq < rcutsq)
                     {
@@ -411,7 +412,7 @@ void PotentialPair< evaluator >::computeForces(unsigned int timestep)
 template < class T > void export_RespaPotentialPair(pybind11::module& m, const std::string& name)
 {
     pybind11::class_<T, std::shared_ptr<T> > respapotentialpair(m, name.c_str(), pybind11::base<ForceCompute>());
-    potentialpair.def(pybind11::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<NeighborList>, std::shared_ptr <ParticleGroup>, const std::string& >())
+    respapotentialpair.def(pybind11::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<NeighborList>, std::shared_ptr <ParticleGroup>, const std::string& >())
     .def("setParams", &T::setParams)
             .def("setRcut", &T::setRcut)
             .def("setRon", &T::setRon)
