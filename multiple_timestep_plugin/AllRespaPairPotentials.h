@@ -6,6 +6,8 @@
 #define MULTIPLE_TIMESTEP_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
 
 #include "RespaPotentialPair.h"
+#include "RespaPotentialPairDPDThermo.h"
+
 #include <hoomd/md/EvaluatorPairLJ.h>
 #include <hoomd/md/EvaluatorPairGauss.h>
 #include <hoomd/md/EvaluatorPairYukawa.h>
@@ -59,7 +61,7 @@ typedef RespaPotentialPair<EvaluatorPairMoliere> RespaPotentialPairMoliere;
 //! Pair potential force compute for ZBL forces
 typedef RespaPotentialPair<EvaluatorPairZBL> RepsaPotentialPairZBL;
 //! Pair potential force compute for dpd thermostat and conservative forces
-typedef RespaPotentialPairDPDThermo<EvaluatorPairDPDThermo> RepsaPotentialPairDPDThermoDPD;
+typedef RespaPotentialPairDPDThermo<EvaluatorPairDPDThermo> RespaPotentialPairDPDThermoDPD;
 //! Pair potential force compute for dpdlj conservative forces (not intended to be used)
 typedef RespaPotentialPair<EvaluatorPairDPDLJThermo> RespaPotentialPairDPDLJ;
 //! Pair potential force compute for dpd thermostat and LJ conservative forces

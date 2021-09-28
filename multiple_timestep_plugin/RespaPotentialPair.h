@@ -103,6 +103,14 @@ public:
     //! Destructor
     virtual ~RespaPotentialPair();
 
+    //Due to the multiple inheritance paths, these lines are needed to clarify any ambiguity.
+    std::shared_ptr<const ExecutionConfiguration> m_exec_conf =  this->PotentialPair<evaluator>::m_exec_conf;
+    std::shared_ptr<Profiler> m_prof = this->PotentialPair<evaluator>::m_prof;
+    const std::shared_ptr<ParticleData> m_pdata = this->PotentialPair<evaluator>::m_pdata;
+    GlobalArray<Scalar4> m_force = this->PotentialPair<evaluator>::m_force;
+    GlobalArray<Scalar>  m_virial = this->PotentialPair<evaluator>::m_virial;
+    unsigned int m_virial_pitch = this->PotentialPair<evaluator>::m_virial_pitch;
+
 protected:
 
     //! Actually compute the forces
@@ -123,45 +131,6 @@ RespaPotentialPair< evaluator >::RespaPotentialPair(std::shared_ptr<SystemDefini
 {
     m_exec_conf->msg->notice(5) << "Constructing RespaPotentialPair<" << evaluator::getName() << ">" << std::endl;
 
-    assert(m_pdata);
-    assert(m_nlist);
-
-    GlobalArray<Scalar> rcutsq(this->m_typpair_idx.getNumElements(), m_exec_conf);
-    this->m_rcutsq.swap(rcutsq);
-
-
-
-    GlobalArray<Scalar> ronsq(this->m_typpair_idx.getNumElements(), m_exec_conf);
-    this->m_ronsq.swap(ronsq);
-    GlobalArray<param_type> params(this->m_typpair_idx.getNumElements(), m_exec_conf);
-    this->m_params.swap(params);
-
-#ifdef ENABLE_CUDA
-    if (m_pdata->getExecConf()->isCUDAEnabled() && m_exec_conf->allConcurrentManagedAccess())
-        {
-        cudaMemAdvise(m_rcutsq.get(), m_rcutsq.getNumElements()*sizeof(Scalar), cudaMemAdviseSetReadMostly, 0);
-        cudaMemAdvise(m_ronsq.get(), m_ronsq.getNumElements()*sizeof(Scalar), cudaMemAdviseSetReadMostly, 0);
-        cudaMemAdvise(m_params.get(), m_params.getNumElements()*sizeof(param_type), cudaMemAdviseSetReadMostly, 0);
-
-        // prefetch
-        auto& gpu_map = m_exec_conf->getGPUIds();
-
-        for (unsigned int idev = 0; idev < m_exec_conf->getNumActiveGPUs(); ++idev)
-            {
-            // prefetch data on all GPUs
-            cudaMemPrefetchAsync(m_rcutsq.get(), sizeof(Scalar)*m_rcutsq.getNumElements(), gpu_map[idev]);
-            cudaMemPrefetchAsync(m_ronsq.get(), sizeof(Scalar)*m_ronsq.getNumElements(),gpu_map[idev]);
-            cudaMemPrefetchAsync(m_params.get(), sizeof(param_type)*m_params.getNumElements(), gpu_map[idev]);
-            }
-        }
-#endif
-
-    // initialize name
-    this->m_prof_name = std::string("Pair ") + evaluator::getName();
-    this->m_log_name = std::string("pair_") + evaluator::getName() + std::string("_energy") + log_suffix;
-
-    // connect to the ParticleData to receive notifications when the maximum number of particles changes
-    m_pdata->getNumTypesChangeSignal().template connect<PotentialPair<evaluator>, &PotentialPair<evaluator>::slotNumTypesChange>(this);
 }
 
 template< class evaluator >
@@ -201,8 +170,6 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
     ArrayHandle<Scalar> h_diameter(m_pdata->getDiameters(), access_location::host, access_mode::read);
     ArrayHandle<Scalar> h_charge(m_pdata->getCharges(), access_location::host, access_mode::read);
 
-    m_exec_conf->msg->warning() << "Example pos:" << h_pos.data[0].x << std::endl;
-
     //force arrays
     ArrayHandle<Scalar4> h_force(m_force,access_location::host, access_mode::overwrite);
     ArrayHandle<Scalar>  h_virial(m_virial,access_location::host, access_mode::overwrite);
@@ -225,7 +192,7 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
     {
         // Extract the actual particle index from the group index and assign it to "i"
         int tagi = m_group->getMemberTag(groupi);
-        int i = this->m_rtag[tagi];
+        int i = m_pdata->getRTag(tagi);
 
         // access the particle's position and type (MEM TRANSFER: 4 scalars)
         Scalar3 pi = make_scalar3(h_pos.data[i].x, h_pos.data[i].y, h_pos.data[i].z);
