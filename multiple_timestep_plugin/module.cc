@@ -16,8 +16,8 @@ PYBIND11_MODULE(_multiple_timestep_plugin, m)
     export_MultipleTimestepIntegrator(m);
     export_RespaForceCompute(m);
     //Could it be that I need to call the export_NeighborList function here?
-    /*
-    export_RespaPotentialPair<RespaPotentialPairLJ>(m,"RespaPotentialPairLJ");
+
+    export_RespaPotentialPair<RespaPotentialPairLJ>(m,"RespaPotentialPairLJ");/*
     export_RespaPotentialPair<RespaPotentialPairGauss>(m,"RespaPotentialPairGauss");
     export_RespaPotentialPair<RespaPotentialPairSLJ>(m,"RespaPotentialPairSLJ");
     export_RespaPotentialPair<RespaPotentialPairYukawa>(m,"RespaPotentialPairYukawa");
