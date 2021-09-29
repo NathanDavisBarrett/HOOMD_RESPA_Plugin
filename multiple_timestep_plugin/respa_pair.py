@@ -19,43 +19,53 @@ an indication that something has gone wrong.
 # * Investigate whether or not you can just override self.cpp_force to be a RespaForceCompute object, or how that even works for the normal pair class.
 #      Other wise, we might not be able to inherit from the normal pair class. Yikes.
 
-#NOTE: As seen on the __init__ function for pair.lj, self.cpp_force and self.cpp_class are both set in the child class. So we're good. PFEW!
+# NOTE: As seen on the __init__ function for pair.lj, self.cpp_force and self.cpp_class are both set in the child class. So we're good. PFEW!
 
-from hoomd.md.pair import pair;
-from hoomd.md import _md;
-import hoomd;
-from hoomd.md.pair import lj;
+print("respa_pair file.")
+from hoomd.md.pair import pair
+from hoomd.md import _md
+import hoomd
+from hoomd.md.pair import lj
+
+print("importing plugin.")
 from hoomd.multiple_timestep_plugin import _multiple_timestep_plugin
+
 
 class respa_pair(pair):
     R""" Respa pair potential documentation.
     This class simply extends the hoomd.md.pair.pair class to act as a RespaPotentialPair
     """
-    def __init__(self,r_cut,nlist,group,name=None):
+
+    def __init__(self, r_cut, nlist, group, name=None):
         hoomd.util.print_status_line();
 
-        pair.__init__(self,r_cut,nlist,name);
+        pair.__init__(self, r_cut, nlist, name);
 
         self.group = group;
 
-class respa_lj(respa_pair,lj):
+
+class respa_lj(respa_pair, lj):
     R""" Respa Lennard-Jones pair potential.
     This class simply extends the hoomd.md.pair.lj class to act as a RespaPotentialPair
     """
 
-    def __init__(self,r_cut,nlist,group,name=None):
+    def __init__(self, r_cut, nlist, group, name=None):
         hoomd.util.print_status_line();
-        respa_pair.__init__(self,r_cut,nlist,group,name);
+        respa_pair.__init__(self, r_cut, nlist, group, name);
 
         if not hoomd.context.exec_conf.isCUDAEnabled():
-            self.cpp_force = _multiple_timestep_plugin.RespaPotentialPairLJ(hoomd.context.current.system_definition, self.nlist.cpp_nlist, self.group.cpp_group, self.name);
+            self.cpp_force = _multiple_timestep_plugin.RespaPotentialPairLJ(hoomd.context.current.system_definition,
+                                                                            self.nlist.cpp_nlist, self.group.cpp_group,
+                                                                            self.name);
             self.cpp_class = _multiple_timestep_plugin.RespaPotentialPairLJ;
         else:
             self.nlist.cpp_nlist.setStorageMode(_md.NeighborList.storageMode.full);
-            self.cpp_force = _multiple_timestep_plugin.RespaPotentialPairLJGPU(hoomd.context.current.system_definition, self.nlist.cpp_nlist, self.group.cpp_group, self.name);
+            self.cpp_force = _multiple_timestep_plugin.RespaPotentialPairLJGPU(hoomd.context.current.system_definition,
+                                                                               self.nlist.cpp_nlist,
+                                                                               self.group.cpp_group, self.name);
             self.cpp_class = _multiple_timestep_plugin.RespaPotentialPairLJGPU;
 
         hoomd.context.current.system.addCompute(self.cpp_force, self.force_name);
 
         self.required_coeff = ['epsilon', 'sigma', 'alpha'];
-        self.pair_coeff.set_default_coeff('alpha',1.0);
+        self.pair_coeff.set_default_coeff('alpha', 1.0);

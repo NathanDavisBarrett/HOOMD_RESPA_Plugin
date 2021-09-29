@@ -9,6 +9,7 @@
 #include <hoomd/md/PotentialPairDPDThermo.h>
 #include <hoomd/md/EvaluatorPairDPDThermo.h>
 #include <hoomd/md/EvaluatorPairDPDLJThermo.h>
+#include <hoomd/md/NeighborList.h>
 #include <hoomd/Variant.h>
 
 #include "RespaPotentialPair.h"
@@ -216,6 +217,7 @@ void RespaPotentialPairDPDThermo<evaluator>::computeForces(unsigned int timestep
 
 template < class T, class Base > void export_RespaPotentialPairDPDThermo(pybind11::module& m, const std::string& name)
 {
+
     pybind11::class_<T, std::shared_ptr<T> >(m, name.c_str(), pybind11::base< Base >())
             .def(pybind11::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<NeighborList>, std::shared_ptr <ParticleGroup>, const std::string& >())
             .def("setSeed", &T::setSeed)

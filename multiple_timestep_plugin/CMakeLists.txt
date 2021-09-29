@@ -6,6 +6,8 @@ set(_${COMPONENT_NAME}_sources
     RespaForceCompute.cc
         )
 
+#Where does CMake include the .h files?
+
 set(_${COMPONENT_NAME}_cu_sources
     MultipleTimestepIntegrator.cu
     )
@@ -15,6 +17,7 @@ CUDA_COMPILE(_CUDA_GENERATED_FILES ${_${COMPONENT_NAME}_cu_sources} OPTIONS ${CU
 endif (ENABLE_CUDA)
 
 pybind11_add_module (_${COMPONENT_NAME} SHARED ${_${COMPONENT_NAME}_sources} ${_CUDA_GENERATED_FILES} NO_EXTRAS)
+
 if (APPLE)
 set_target_properties(_${COMPONENT_NAME} PROPERTIES INSTALL_RPATH "@loader_path/..;@loader_path")
 else()

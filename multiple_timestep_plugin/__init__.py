@@ -8,5 +8,7 @@
 # NOTE: adjust the import statement to match the name of the template
 # (here: multiple_timestep_plugin)
 
-from hoomd.multiple_timestep_plugin import respa_integrator
+print("importing respa_pair")
 from hoomd.multiple_timestep_plugin import respa_pair
+from hoomd.multiple_timestep_plugin import respa_integrator
+
