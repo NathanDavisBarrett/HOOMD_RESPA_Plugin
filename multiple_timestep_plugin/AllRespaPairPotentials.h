@@ -4,7 +4,7 @@
 
 #ifndef MULTIPLE_TIMESTEP_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
 #define MULTIPLE_TIMESTEP_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
-
+/*
 #include "RespaPotentialPair.h"
 #include "RespaPotentialPairDPDThermo.h"
 
@@ -36,7 +36,7 @@
 
 /*! \file AllPairPotentials.h
     \brief Handy list of typedefs for all of the templated pair potentials in hoomd
-*/
+*./
 
 #ifdef NVCC
 #error This header cannot be compiled by nvcc
@@ -122,5 +122,5 @@ typedef RespaPotentialPairGPU< EvaluatorPairDLVO, gpu_compute_dlvo_forces > Resp
 typedef RespaPotentialPairGPU<EvaluatorPairFourier, gpu_compute_fourier_forces> RespaPotentialPairFourierGPU;
 #endif
 
-
+*/
 #endif //MULTIPLE_TIMESTEP_PLUGIN_ALLRESPAPAIRPOTENTIALS_H

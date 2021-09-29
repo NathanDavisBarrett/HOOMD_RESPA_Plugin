@@ -16,6 +16,7 @@ PYBIND11_MODULE(_multiple_timestep_plugin, m)
     export_MultipleTimestepIntegrator(m);
     export_RespaForceCompute(m);
     //Could it be that I need to call the export_NeighborList function here?
+    /*
     export_RespaPotentialPair<RespaPotentialPairLJ>(m,"RespaPotentialPairLJ");
     export_RespaPotentialPair<RespaPotentialPairGauss>(m,"RespaPotentialPairGauss");
     export_RespaPotentialPair<RespaPotentialPairSLJ>(m,"RespaPotentialPairSLJ");
@@ -25,16 +26,16 @@ PYBIND11_MODULE(_multiple_timestep_plugin, m)
     export_RespaPotentialPair<RespaPotentialPairDPD>(m,"RespaPotentialPairDPD");
     export_RespaPotentialPair<RespaPotentialPairMoliere>(m,"RespaPotentialPairMoliere");
     export_RespaPotentialPair<RepsaPotentialPairZBL>(m,"RepsaPotentialPairZBL");
-    //export_RespaPotentialPairDPDThermo<RespaPotentialPairDPDThermoDPD, RespaPotentialPairDPD>(m, "RespaPotentialPairDPDThermoDPD");
+    export_RespaPotentialPairDPDThermo<RespaPotentialPairDPDThermoDPD, RespaPotentialPairDPD>(m, "RespaPotentialPairDPDThermoDPD");
     export_RespaPotentialPair<RespaPotentialPairDPDLJ>(m,"RespaPotentialPairDPDLJ");
-    //export_RespaPotentialPairDPDThermo<RespaPotentialPairDPDLJThermoDPD, RespaPotentialPairDPDLJ>(m, "RespaPotentialPairDPDLJThermoDPD");
+    export_RespaPotentialPairDPDThermo<RespaPotentialPairDPDLJThermoDPD, RespaPotentialPairDPDLJ>(m, "RespaPotentialPairDPDLJThermoDPD");
     export_RespaPotentialPair<RespaPotentialPairForceShiftedLJ>(m,"RespaPotentialPairForceShiftedLJ");
     export_RespaPotentialPair<RespaPotentialPairMie>(m,"RespaPotentialPairMie");
     export_RespaPotentialPair<RespaPotentialPairReactionField>(m,"RespaPotentialPairReactionField");
     export_RespaPotentialPair<RespaPotentialPairBuckingham>(m,"RespaPotentialPairBuckingham");
     export_RespaPotentialPair<RespaPotentialPairLJ1208>(m,"RespaPotentialPairLJ1208");
     export_RespaPotentialPair<RespaPotentialPairDLVO>(m,"RespaPotentialPairDLVO");
-    export_RespaPotentialPair<RespaPotentialPairFourier>(m,"RespaPotentialPairFourier");
+    export_RespaPotentialPair<RespaPotentialPairFourier>(m,"RespaPotentialPairFourier");*/
 
 
 
