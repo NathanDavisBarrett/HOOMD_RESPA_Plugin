@@ -61,11 +61,11 @@ typedef RespaPotentialPair<EvaluatorPairMoliere> RespaPotentialPairMoliere;
 //! Pair potential force compute for ZBL forces
 typedef RespaPotentialPair<EvaluatorPairZBL> RepsaPotentialPairZBL;
 //! Pair potential force compute for dpd thermostat and conservative forces
-//typedef RespaPotentialPairDPDThermo<EvaluatorPairDPDThermo> RespaPotentialPairDPDThermoDPD;
+typedef RespaPotentialPairDPDThermo<EvaluatorPairDPDThermo> RespaPotentialPairDPDThermoDPD;
 //! Pair potential force compute for dpdlj conservative forces (not intended to be used)
 typedef RespaPotentialPair<EvaluatorPairDPDLJThermo> RespaPotentialPairDPDLJ;
 //! Pair potential force compute for dpd thermostat and LJ conservative forces
-//typedef RespaPotentialPairDPDThermo<EvaluatorPairDPDLJThermo> RespaPotentialPairDPDLJThermoDPD;
+typedef RespaPotentialPairDPDThermo<EvaluatorPairDPDLJThermo> RespaPotentialPairDPDLJThermoDPD;
 //! Pair potential force compute for force shifted LJ on the GPU
 typedef RespaPotentialPair<EvaluatorPairForceShiftedLJ> RespaPotentialPairForceShiftedLJ;
 //! Pair potential force compute for Mie potential

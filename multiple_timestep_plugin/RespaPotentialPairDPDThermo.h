@@ -4,7 +4,7 @@
 
 #ifndef MULTIPLE_TIMESTEP_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H
 #define MULTIPLE_TIMESTEP_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H
-/*
+
 #include <hoomd/md/PotentialPair.h>
 #include <hoomd/md/PotentialPairDPDThermo.h>
 #include <hoomd/md/EvaluatorPairDPDThermo.h>
@@ -17,7 +17,7 @@
 /*! \file RespaPotentialPairDPDThermo.h
     \brief Etends the PotentialPairDPDThermo class to operate with the RespaForceCompute methodology
 
-*./
+*/
 
 template < class evaluator >
 class RespaPotentialPairDPDThermo : public PotentialPairDPDThermo<evaluator>, public RespaPotentialPair<evaluator>
@@ -224,5 +224,5 @@ template < class T, class Base > void export_RespaPotentialPairDPDThermo(pybind1
             .def("setT", &T::setT)
             ;
 }
-*/
+
 #endif //MULTIPLE_TIMESTEP_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H
