@@ -7,7 +7,7 @@
 #ifndef __RESPA_POTENTIAL_PAIR_H__
 #define __RESPA_POTENTIAL_PAIR_H__
 
-/*
+
 #include <iostream>
 #include <stdexcept>
 #include <memory>
@@ -37,7 +37,7 @@
     \brief Defines the template class for standard RESPA pair potentials
     \details The heart of the code that computes pair potentials is in this file.
     \note This header cannot be compiled by nvcc
-*./
+*/
 
 #ifdef NVCC
 #error This header cannot be compiled by nvcc
@@ -87,7 +87,7 @@
     independently.
 
     \sa export_PotentialPair()
-*./
+*/
 
 template < class evaluator >
 class RespaPotentialPair: public PotentialPair<evaluator>, public RespaForceCompute
@@ -122,7 +122,7 @@ protected:
 /*! \param sysdef System to compute forces on
     \param nlist Neighborlist to use for computing the forces
     \param log_suffix Name given to this instance of the force
-*./
+*/
 template < class evaluator >
 RespaPotentialPair< evaluator >::RespaPotentialPair(std::shared_ptr<SystemDefinition> sysdef,
                                           std::shared_ptr<NeighborList> nlist,
@@ -147,7 +147,7 @@ RespaPotentialPair< evaluator >::~RespaPotentialPair()
     particles in the specified group will be itterated over.
 
     \param timestep specifies the current time step of the simulation
-*./
+*/
 template< class evaluator >
 void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 {
@@ -376,7 +376,7 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 //! Export this pair potential to python
 /*! \param name Name of the class in the exported python module
     \tparam T Class type to export. \b Must be an instantiated PotentialPair class template.
-*./
+*/
 template < class T > void export_RespaPotentialPair(pybind11::module& m, const std::string& name)
 {
     pybind11::class_<T, std::shared_ptr<T> > respapotentialpair(m, name.c_str(), pybind11::base<ForceCompute>());
@@ -397,6 +397,4 @@ template < class T > void export_RespaPotentialPair(pybind11::module& m, const s
             .export_values()
             ;
 }
-
-*/
 #endif // __RESPA_POTENTIAL_PAIR_H__
