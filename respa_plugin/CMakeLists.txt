@@ -26,6 +26,7 @@ endif()
 
 # link the library to its dependencies
 target_link_libraries(_${COMPONENT_NAME} PRIVATE ${HOOMD_LIBRARIES})
+target_link_libraries(_${COMPONENT_NAME} PRIVATE ${HOOMD_MD_LIBRARIES})
 
 # if we are compiling with MPI support built in, set appropriate
 # compiler/linker flags
