@@ -2,8 +2,8 @@
 // Created by nathan on 9/18/2021.
 //
 
-#ifndef MULTIPLE_TIMESTEP_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
-#define MULTIPLE_TIMESTEP_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
+#ifndef RESPA_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
+#define RESPA_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
 
 #include "RespaPotentialPair.h"
 #include "RespaPotentialPairDPDThermo.h"
@@ -123,4 +123,4 @@ typedef RespaPotentialPairGPU<EvaluatorPairFourier, gpu_compute_fourier_forces> 
 #endif
 
 
-#endif //MULTIPLE_TIMESTEP_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
+#endif //RESPA_PLUGIN_ALLRESPAPAIRPOTENTIALS_H

@@ -1,15 +1,15 @@
-set(COMPONENT_NAME multiple_timestep_plugin)
+set(COMPONENT_NAME respa_plugin)
 
 set(_${COMPONENT_NAME}_sources
     module.cc
-    MultipleTimestepIntegrator.cc
+        RespaIntegrator.cc
     RespaForceCompute.cc
         )
 
 #Where does CMake include the .h files?
 
 set(_${COMPONENT_NAME}_cu_sources
-    MultipleTimestepIntegrator.cu
+        RespaIntegrator.cu
     )
 
 if (ENABLE_CUDA)
@@ -60,7 +60,7 @@ ENDMACRO(copy_file)
 
 set(files
     __init__.py
-#    multiple_timestep_plugin.py
+#    respa_plugin.py
     respa_integrator.py
     respa_pair.py
         )

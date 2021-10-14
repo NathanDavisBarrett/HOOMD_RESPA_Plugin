@@ -4,10 +4,10 @@
 
 #include "hip/hip_runtime.h"
 
-#include "MultipleTimestepIntegrator.cuh"
+#include "RespaIntegrator.cuh"
 
-/*! \file MultipleTimestepIntegrator.cu
-    \brief CUDA kernels for MultipleTimestepIntegrator
+/*! \file RespaIntegrator.cu
+    \brief CUDA kernels for RespaIntegrator
 */
 
 // First, the kernel code for zeroing the velocities on the GPU

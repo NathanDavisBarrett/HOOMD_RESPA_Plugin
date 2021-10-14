@@ -2,8 +2,8 @@
 // Created by nathan on 9/25/21.
 //
 
-#ifndef MULTIPLE_TIMESTEP_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H
-#define MULTIPLE_TIMESTEP_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H
+#ifndef RESPA_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H
+#define RESPA_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H
 
 #include <hoomd/md/PotentialPair.h>
 #include <hoomd/md/PotentialPairDPDThermo.h>
@@ -225,4 +225,4 @@ template < class T, class Base > void export_RespaPotentialPairDPDThermo(pybind1
             ;
 }
 
-#endif //MULTIPLE_TIMESTEP_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H
+#endif //RESPA_PLUGIN_RESPAPOTENTIALPAIRDPDTHERMO_H

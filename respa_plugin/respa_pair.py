@@ -15,7 +15,7 @@ an indication that something has gone wrong.
 
 """
 
-# TO-DO:
+# TODO:
 # * Investigate whether or not you can just override self.cpp_force to be a RespaForceCompute object, or how that even works for the normal pair class.
 #      Other wise, we might not be able to inherit from the normal pair class. Yikes.
 
@@ -28,7 +28,7 @@ import hoomd
 from hoomd.md.pair import lj
 
 print("importing plugin.")
-from hoomd.multiple_timestep_plugin import _multiple_timestep_plugin
+from hoomd.respa_plugin import _respa_plugin
 
 
 class respa_pair(pair):
@@ -54,16 +54,16 @@ class respa_lj(respa_pair, lj):
         respa_pair.__init__(self, r_cut, nlist, group, name);
 
         if not hoomd.context.exec_conf.isCUDAEnabled():
-            self.cpp_force = _multiple_timestep_plugin.RespaPotentialPairLJ(hoomd.context.current.system_definition,
+            self.cpp_force = _respa_plugin.RespaPotentialPairLJ(hoomd.context.current.system_definition,
                                                                             self.nlist.cpp_nlist, self.group.cpp_group,
                                                                             self.name);
-            self.cpp_class = _multiple_timestep_plugin.RespaPotentialPairLJ;
+            self.cpp_class = _respaplugin.RespaPotentialPairLJ;
         else:
             self.nlist.cpp_nlist.setStorageMode(_md.NeighborList.storageMode.full);
-            self.cpp_force = _multiple_timestep_plugin.RespaPotentialPairLJGPU(hoomd.context.current.system_definition,
+            self.cpp_force = _respa_plugin.RespaPotentialPairLJGPU(hoomd.context.current.system_definition,
                                                                                self.nlist.cpp_nlist,
                                                                                self.group.cpp_group, self.name);
-            self.cpp_class = _multiple_timestep_plugin.RespaPotentialPairLJGPU;
+            self.cpp_class = _respaplugin.RespaPotentialPairLJGPU;
 
         hoomd.context.current.system.addCompute(self.cpp_force, self.force_name);
 

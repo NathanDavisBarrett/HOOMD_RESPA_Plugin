@@ -159,7 +159,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=multiple_timestep_plugin
+CMAKE_PROJECT_NAME:STATIC=respa_plugin
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -249,6 +249,12 @@ multiple_timestep_plugin_BINARY_DIR:STATIC=/home/nathan/Documents/WORK-Chicago/M
 
 //Value Computed by CMake
 multiple_timestep_plugin_SOURCE_DIR:STATIC=/home/nathan/Documents/WORK-Chicago/MultipleTimestep/hoomdRESPA_SperatePlugin/multipleTimestepPlugin_Example_Plugin_Base
+
+//Value Computed by CMake
+respa_plugin_BINARY_DIR:STATIC=/home/nathan/Documents/WORK-Chicago/MultipleTimestep/hoomdRESPA_SperatePlugin/multipleTimestepPlugin_Example_Plugin_Base/cmake-build-debug
+
+//Value Computed by CMake
+respa_plugin_SOURCE_DIR:STATIC=/home/nathan/Documents/WORK-Chicago/MultipleTimestep/hoomdRESPA_SperatePlugin/multipleTimestepPlugin_Example_Plugin_Base
 
 
 ########################

@@ -6,9 +6,9 @@
 # need to import all submodules defined in this directory
 
 # NOTE: adjust the import statement to match the name of the template
-# (here: multiple_timestep_plugin)
+# (here: respa_plugin)
 
 print("importing respa_pair")
-from hoomd.multiple_timestep_plugin import respa_pair
-from hoomd.multiple_timestep_plugin import respa_integrator
+from hoomd.respa_plugin import respa_pair
+from hoomd.respa_plugin import respa_integrator
 

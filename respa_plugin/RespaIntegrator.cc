@@ -2,7 +2,7 @@
 // Created by nathan on 8/12/21.
 //
 
-#include "MultipleTimestepIntegrator.h"
+#include "RespaIntegrator.h"
 
 #include <iostream>
 #include <fstream>
@@ -12,31 +12,31 @@
 namespace py = pybind11;
 
 #ifdef ENABLE_HIP
-#include "MultipleTimestepIntegrator.cuh"
+#include "RespaIntegrator.cuh"
 #endif
 
-/*! \file MultipleTimestepIntegrator.cc
-    \brief Definition of MultipleTimestepIntegrator
+/*! \file RespaIntegrator.cc
+    \brief Definition of RespaIntegrator
 */
 
 // ********************************
-// here follows the code for MultipleTimestepIntegrator on the CPU
+// here follows the code for RespaIntegrator on the CPU
 
 /*! \param sysdef System to zero the velocities of
  */
-MultipleTimestepIntegrator::MultipleTimestepIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
+RespaIntegrator::RespaIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
 : Integrator(sysdef, deltaT), m_prepared(false), m_aniso_mode(Automatic) {
-    m_exec_conf->msg->notice(5) << "Constructing MultipleTimestepIntegrator" << std::endl;
-    //m_exec_conf->msg->warning() << "Constructing MultipleTimestepIntegrator:" << this << std::endl;
+    m_exec_conf->msg->notice(5) << "Constructing RespaIntegrator" << std::endl;
+    //m_exec_conf->msg->warning() << "Constructing RespaIntegrator:" << this << std::endl;
 }
 
-MultipleTimestepIntegrator::~MultipleTimestepIntegrator() {
-    m_exec_conf->msg->notice(5) << "Destroying MultipleTimestepIntegrator" << std::endl;
+RespaIntegrator::~RespaIntegrator() {
+    m_exec_conf->msg->notice(5) << "Destroying RespaIntegrator" << std::endl;
 
 #ifdef ENABLE_MPI
     if (m_comm) {
         m_comm->getComputeCallbackSignal()
-        .disconnect<MultipleTimestepIntegrator, &MultipleTimestepIntegrator::updateRigidBodies>(this);
+        .disconnect<RespaIntegrator, &RespaIntegrator::updateRigidBodies>(this);
     }
 #endif
 }
@@ -44,20 +44,20 @@ MultipleTimestepIntegrator::~MultipleTimestepIntegrator() {
 /*! \param prof The profiler to set
     Sets the profiler both for this class
 */
-void MultipleTimestepIntegrator::setProfiler(std::shared_ptr<Profiler> prof)
+void RespaIntegrator::setProfiler(std::shared_ptr<Profiler> prof)
 {
     Integrator::setProfiler(prof);
 }
 
-Scalar MultipleTimestepIntegrator::calculateForceScalingFactor(int numSubsteps) {
+Scalar RespaIntegrator::calculateForceScalingFactor(int numSubsteps) {
     return 0.5 * (m_deltaT / numSubsteps);
 }
 
-Scalar MultipleTimestepIntegrator::calculateVelScalingFactor(int numSubsteps) {
+Scalar RespaIntegrator::calculateVelScalingFactor(int numSubsteps) {
     return (m_deltaT / numSubsteps);
 }
 
-void MultipleTimestepIntegrator::addSubstep(int stepType, std::shared_ptr<RespaForceCompute> forceCompute, int numSubsteps) {
+void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<RespaForceCompute> forceCompute, int numSubsteps) {
     Scalar forceScalingFactor = NULL;
     Scalar velScalingFactor = NULL;
 
@@ -82,7 +82,7 @@ void MultipleTimestepIntegrator::addSubstep(int stepType, std::shared_ptr<RespaF
 
 /*! Create the substeps needed for each loop and subloop in the RESPA algorithm.
 */
-void MultipleTimestepIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>> forceGroups, int parentSubsteps) {
+void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>> forceGroups, int parentSubsteps) {
     //m_exec_conf->msg->warning() << "createSubsteps called" << std::endl;
 
     std::pair<std::shared_ptr<RespaForceCompute>, int> topGroup = forceGroups.at(0);
@@ -108,7 +108,7 @@ void MultipleTimestepIntegrator::createSubsteps(std::vector<std::pair<std::share
 
             tempGroups.erase(tempGroups.begin());
 
-            MultipleTimestepIntegrator::createSubsteps(tempGroups, topSubsteps);
+            RespaIntegrator::createSubsteps(tempGroups, topSubsteps);
         }
         this->addSubstep(VEL_STEP,topForce,topSubsteps);
     }
@@ -116,8 +116,8 @@ void MultipleTimestepIntegrator::createSubsteps(std::vector<std::pair<std::share
 
 /*! Prepare for the run.
 */
-void MultipleTimestepIntegrator::prepRun(unsigned int timestep) {
-    //m_exec_conf->msg->warning() << "MultipleTimestepIntegrator prepRun called" << std::endl;
+void RespaIntegrator::prepRun(unsigned int timestep) {
+    //m_exec_conf->msg->warning() << "RespaIntegrator prepRun called" << std::endl;
 
     //First, make sure the vector of ForceComputes are organized to put the least frequent force at the front, and the most frequent force at the back.
     struct SortHelper {
@@ -129,7 +129,7 @@ void MultipleTimestepIntegrator::prepRun(unsigned int timestep) {
     std::sort(m_respa_forces.begin(), m_respa_forces.end(), SortHelper());
 
     //Now create the substeps needed to execute the RESPA algorithm.
-    MultipleTimestepIntegrator::createSubsteps(m_respa_forces, 1);
+    RespaIntegrator::createSubsteps(m_respa_forces, 1);
 
     m_prepared = true;
 
@@ -152,7 +152,7 @@ void MultipleTimestepIntegrator::prepRun(unsigned int timestep) {
 /*! Perform the needed calculations according to the RESPA algorithm
     \param timestep Current time step of the simulation (i.e. the timestep number??)
 */
-void MultipleTimestepIntegrator::update(unsigned int timestep)
+void RespaIntegrator::update(unsigned int timestep)
 {
     Integrator::update(timestep);
     //m_exec_conf->msg->warning() << "TIMESTEP: " << timestep << std::endl;
@@ -161,7 +161,7 @@ void MultipleTimestepIntegrator::update(unsigned int timestep)
     assert(m_prepared);
 
     if (m_prof)
-        m_prof->push("MultipleTimestepIntegrator");
+        m_prof->push("RespaIntegrator");
 
     // access the particle data for writing on the CPU
     assert(m_pdata);
@@ -297,20 +297,20 @@ void MultipleTimestepIntegrator::update(unsigned int timestep)
 
 /*! \param deltaT new deltaT to set
 */
-void MultipleTimestepIntegrator::setDeltaT(Scalar deltaT)
+void RespaIntegrator::setDeltaT(Scalar deltaT)
 {
     Integrator::setDeltaT(deltaT);
 }
 
 /*! Get the number of degrees of freedom granted to a given group
 */
-unsigned int MultipleTimestepIntegrator::getNDOF(std::shared_ptr<ParticleGroup> query_group) {
+unsigned int RespaIntegrator::getNDOF(std::shared_ptr<ParticleGroup> query_group) {
     unsigned int group_size = query_group->getNumMembersGlobal();
 
     return m_sysdef->getNDimensions() * group_size;
 }
 
-unsigned int MultipleTimestepIntegrator::getRotationalNDOF(std::shared_ptr<ParticleGroup> group)
+unsigned int RespaIntegrator::getRotationalNDOF(std::shared_ptr<ParticleGroup> group)
 {
     int res = 0;
 
@@ -330,7 +330,7 @@ unsigned int MultipleTimestepIntegrator::getRotationalNDOF(std::shared_ptr<Parti
                     break;
     }
 
-    //m_exec_conf->msg->notice(8) << "MultipleTimestepIntegrator: Setting anisotropic mode = " << aniso << std::endl;
+    //m_exec_conf->msg->notice(8) << "RespaIntegrator: Setting anisotropic mode = " << aniso << std::endl;
 
     if (aniso)
     {
@@ -375,20 +375,20 @@ unsigned int MultipleTimestepIntegrator::getRotationalNDOF(std::shared_ptr<Parti
 
 /*! Set the anisotropic mode of the integrator
  */
-void MultipleTimestepIntegrator::setAnisotropicMode(AnisotropicMode mode) {
+void RespaIntegrator::setAnisotropicMode(AnisotropicMode mode) {
     m_aniso_mode = mode;
 }
 
 /*! get the anisotropic mode of the integrator
  */
-bool MultipleTimestepIntegrator::getAnisotropicMode() {
+bool RespaIntegrator::getAnisotropicMode() {
     return m_aniso_mode;
 }
 
 /* Add a new force/frequency pair to the integrator.
  *
  */
-void MultipleTimestepIntegrator::addForce(std::shared_ptr<RespaForceCompute> force, int frequency) {
+void RespaIntegrator::addForce(std::shared_ptr<RespaForceCompute> force, int frequency) {
     //m_exec_conf->msg->warning() << "addForce called" << std::endl;
     std::pair<std::shared_ptr<RespaForceCompute>, int> newForce;
     newForce.first = force;
@@ -398,42 +398,42 @@ void MultipleTimestepIntegrator::addForce(std::shared_ptr<RespaForceCompute> for
 
 /* Export the CPU Integrator to be visible in the python module
  */
-void export_MultipleTimestepIntegrator(pybind11::module& m)
+void export_RespaIntegrator(pybind11::module& m)
 {
-    pybind11::class_<MultipleTimestepIntegrator, Integrator, std::shared_ptr<MultipleTimestepIntegrator>>(m, "MultipleTimestepIntegrator")
+    pybind11::class_<RespaIntegrator, Integrator, std::shared_ptr<RespaIntegrator>>(m, "RespaIntegrator")
     .def(py::init<std::shared_ptr<SystemDefinition>, Scalar>())
-    .def("getNDOF", &MultipleTimestepIntegrator::getNDOF)
-    .def("getRotationalNDOF", &MultipleTimestepIntegrator::getRotationalNDOF)
-    .def("addForce", &MultipleTimestepIntegrator::addForce);
+    .def("getNDOF", &RespaIntegrator::getNDOF)
+    .def("getRotationalNDOF", &RespaIntegrator::getRotationalNDOF)
+    .def("addForce", &RespaIntegrator::addForce);
 }
 
 // ********************************
-// here follows the code for MultipleTimestepIntegrator on the GPU
+// here follows the code for RespaIntegrator on the GPU
 
 #ifdef ENABLE_HIP
 
 /*! \param sysdef System to zero the velocities of
  */
-MultipleTimestepIntegratorGPU::MultipleTimestepIntegratorGPU(std::shared_ptr<SystemDefinition> sysdef)
-: MultipleTimestepIntegrator(sysdef)
+RespaIntegratorGPU::RespaIntegratorGPU(std::shared_ptr<SystemDefinition> sysdef)
+: RespaIntegrator(sysdef)
 {
 }
 
 /*! Perform the needed calculations to zero the system's velocity
     \param timestep Current time step of the simulation
 */
-void MultipleTimestepIntegratorGPU::update(uint64_t timestep)
+void RespaIntegratorGPU::update(uint64_t timestep)
 {
     Integrator::update(timestep);
     if (m_prof)
-        m_prof->push("MultipleTimestepIntegrator");
+        m_prof->push("RespaIntegrator");
 
     // access the particle data arrays for writing on the GPU
     ArrayHandle<Scalar4> d_vel(m_pdata->getVelocities(),
                                access_location::device,
                                access_mode::readwrite);
 
-    // call the kernel defined in MultipleTimestepIntegrator.cu
+    // call the kernel defined in RespaIntegrator.cu
     gpu_zero_velocities(d_vel.data, m_pdata->getN());
 
     // check for error codes from the GPU if error checking is enabled
@@ -446,11 +446,11 @@ void MultipleTimestepIntegratorGPU::update(uint64_t timestep)
 
 /* Export the GPU Integrator to be visible in the python module
  */
-void export_MultipleTimestepIntegratorGPU(pybind11::module& m)
+void export_RespaIntegratorGPU(pybind11::module& m)
 {
-    pybind11::class_<MultipleTimestepIntegratorGPU, MultipleTimestepIntegrator, std::shared_ptr<MultipleTimestepIntegratorGPU>>(
+    pybind11::class_<RespaIntegratorGPU, RespaIntegrator, std::shared_ptr<RespaIntegratorGPU>>(
             m,
-            "MultipleTimestepIntegratorGPU")
+            "RespaIntegratorGPU")
             .def(pybind11::init<std::shared_ptr<SystemDefinition>>());
 }
 

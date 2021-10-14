@@ -21,7 +21,7 @@ See 'mode_respa' for more details.
 
 from hoomd import _hoomd
 from hoomd.md import _md
-from hoomd.multiple_timestep_plugin import _multiple_timestep_plugin
+from hoomd.respa_plugin import _respa_plugin
 import hoomd;
 from hoomd.integrate import _integrator
 import copy;
@@ -107,7 +107,7 @@ class mode_respa(_integrator):
         self.metadata_fields = ['dt', 'forceFreqPairs', 'aniso']
 
         # initialize the reflected c++ class
-        self.cpp_integrator = _multiple_timestep_plugin.MultipleTimestepIntegrator(hoomd.context.current.system_definition, dt);
+        self.cpp_integrator = _respa_plugin.RespaIntegrator(hoomd.context.current.system_definition, dt);
         self.supports_methods = False;
 
         hoomd.context.current.system.setIntegrator(self.cpp_integrator);

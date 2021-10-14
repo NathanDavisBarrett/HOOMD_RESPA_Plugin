@@ -2,11 +2,11 @@
 // Created by nathan on 8/12/21.
 //
 
-#ifndef MULTIPLETIMESTEPPLUGIN_MULTIPLETIMESTEPINTEGRATOR_H
-#define MULTIPLETIMESTEPPLUGIN_MULTIPLETIMESTEPINTEGRATOR_H
+#ifndef RESPAPLUGIN_RESPAINTEGRATOR_H
+#define RESPAPLUGIN_RESPAINTEGRATOR_H
 
-/*! \file MultipleTimestepIntegrator.h
-    \brief Declaration of MultipleTimestepIntegrator
+/*! \file RespaIntegrator.h
+    \brief Declaration of RespaIntegrator
 */
 
 #include <hoomd/Integrator.h>
@@ -31,7 +31,7 @@
 //! A nonsense particle Integrator written to demonstrate how to write a plugin
 /*! This Integrator simply sets all of the particle's velocities to 0 when update() is called.
  */
-class MultipleTimestepIntegrator : public Integrator
+class RespaIntegrator : public Integrator
         {
         private:
             std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>> m_respa_forces;
@@ -63,10 +63,10 @@ class MultipleTimestepIntegrator : public Integrator
                     };
 
             //! Constructor
-            MultipleTimestepIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT);
+            RespaIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT);
 
             //! Destructor
-            ~MultipleTimestepIntegrator();
+            ~RespaIntegrator();
 
             //! Take one timestep forward
             void update(unsigned int timestep);
@@ -110,8 +110,8 @@ class MultipleTimestepIntegrator : public Integrator
             AnisotropicMode m_aniso_mode; //!< Anisotropic mode for this integrator
         };
 
-//! Export the MultipleTimestepIntegrator class to python
-void export_MultipleTimestepIntegrator(pybind11::module& m);
+//! Export the RespaIntegrator class to python
+void export_RespaIntegrator(pybind11::module& m);
 
 // Third, this class offers a GPU accelerated method in order to demonstrate how to include CUDA
 // code in pluins we need to declare a separate class for that (but only if ENABLE_HIP is set)
@@ -123,11 +123,11 @@ void export_MultipleTimestepIntegrator(pybind11::module& m);
 /*! This Integrator simply sets all of the particle's velocities to 0 (on the GPU) when update() is
  * called.
  */
-class MultipleTimestepIntegratorGPU : public MultipleTimestepIntegrator
+class RespaIntegratorGPU : public RespaIntegrator
         {
         public:
             //! Constructor
-            MultipleTimestepIntegratorGPU(std::shared_ptr<SystemDefinition> sysdef);
+            RespaIntegratorGPU(std::shared_ptr<SystemDefinition> sysdef);
 
             //! Take one timestep forward
             virtual void update(uint64_t timestep);
@@ -136,8 +136,8 @@ class MultipleTimestepIntegratorGPU : public MultipleTimestepIntegrator
         };
 
 //! Export the ExampleIntegratorGPU class to python
-void export_MultipleTimestepIntegratorGPU(pybind11::module& m);
+void export_RespaIntegratorGPU(pybind11::module& m);
 
 #endif // ENABLE_HIP
 
-#endif //MULTIPLETIMESTEPPLUGIN_MULTIPLETIMESTEPINTEGRATOR_H
+#endif //RespaPLUGIN_RespaINTEGRATOR_H

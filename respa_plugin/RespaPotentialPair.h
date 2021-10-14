@@ -381,7 +381,8 @@ template < class T > void export_RespaPotentialPair(pybind11::module& m, const s
 {
     pybind11::print("CALLED THE exportFUNC!");
     pybind11::class_<T, std::shared_ptr<T> > respapotentialpair(m, name.c_str(), pybind11::base<ForceCompute>());
-    /*respapotentialpair.def(pybind11::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<NeighborList>, std::shared_ptr <ParticleGroup>, const std::string& >())
+    //This is where the error is being called from. Do I need to specify the NeighborList class in the pyClass definition somehow?
+    respapotentialpair.def(pybind11::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<NeighborList>, std::shared_ptr <ParticleGroup>, const std::string& >())
             .def("setParams", &T::setParams)
             .def("setRcut", &T::setRcut)
             .def("setRon", &T::setRon)
@@ -396,6 +397,6 @@ template < class T > void export_RespaPotentialPair(pybind11::module& m, const s
             .value("shift", T::energyShiftMode::shift)
             .value("xplor", T::energyShiftMode::xplor)
             .export_values()
-            ;*/
+            ;
 }
 #endif // __RESPA_POTENTIAL_PAIR_H__

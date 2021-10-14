@@ -1,7 +1,7 @@
-print("Importing Multiple Timestep Integrator!")
+print("Importing Respa Integrator!")
 import itertools
 
-from hoomd.multiple_timestep_plugin import _multiple_timestep_plugin
+from hoomd.respa_plugin import _respa_plugin
 
 from hoomd.md import _md
 from hoomd.data.parameterdicts import ParameterDict
@@ -116,7 +116,7 @@ class Integrator_Respa(_md._DynamicIntegrator):
 
     def _attach(self):
         # initialize the reflected c++ class
-        self._cpp_obj = _md.MultipleTimestepIntegrator(
+        self._cpp_obj = _md.RespaIntegrator(
             self._simulation.state._cpp_sys_def, self.dt)
 
         if self._forces == None:

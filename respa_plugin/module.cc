@@ -2,7 +2,7 @@
 // This file is part of the HOOMD-blue project, released under the BSD 3-Clause License.
 
 // Include the defined classes that are to be exported to python
-#include "MultipleTimestepIntegrator.h"
+#include "RespaIntegrator.h"
 #include "RespaForceCompute.h"
 #include "RespaPotentialPair.h"
 #include "AllRespaPairPotentials.h"
@@ -11,9 +11,9 @@
 
 // specify the python module. Note that the name must explicitly match the PROJECT() name provided in CMakeLists
 // (with an underscore in front)
-PYBIND11_MODULE(_multiple_timestep_plugin, m)
+PYBIND11_MODULE(_respa_plugin, m)
 {
-    export_MultipleTimestepIntegrator(m);
+    export_RespaIntegrator(m);
     export_RespaForceCompute(m);
     export_RespaPotentialPair<RespaPotentialPairLJ>(m,"RespaPotentialPairLJ");/*
     export_RespaPotentialPair<RespaPotentialPairGauss>(m,"RespaPotentialPairGauss");
@@ -38,6 +38,6 @@ PYBIND11_MODULE(_multiple_timestep_plugin, m)
 
 
 #ifdef ENABLE_HIP
-    export_MultipleTimestepGPU(m);
+    export_RespaGPU(m);
 #endif
 }
