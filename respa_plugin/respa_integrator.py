@@ -161,6 +161,8 @@ class mode_respa(_integrator):
         force, freq = forceFreqPair
         cpp_force = force.cpp_force
 
+        print("FORCE TYPES:",type(cpp_force),type(force))
+
         if force.enabled:
             self.cpp_integrator.addForce(cpp_force, freq)
 

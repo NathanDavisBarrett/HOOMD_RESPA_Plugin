@@ -57,7 +57,7 @@ class respa_lj(respa_pair, lj):
             self.cpp_force = _respa_plugin.RespaPotentialPairLJ(hoomd.context.current.system_definition,
                                                                             self.nlist.cpp_nlist, self.group.cpp_group,
                                                                             self.name);
-            self.cpp_class = _respaplugin.RespaPotentialPairLJ;
+            self.cpp_class = _respa_plugin.RespaPotentialPairLJ;
         else:
             self.nlist.cpp_nlist.setStorageMode(_md.NeighborList.storageMode.full);
             self.cpp_force = _respa_plugin.RespaPotentialPairLJGPU(hoomd.context.current.system_definition,

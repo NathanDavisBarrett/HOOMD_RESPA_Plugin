@@ -390,12 +390,5 @@ template < class T > void export_RespaPotentialPair(pybind11::module& m, const s
             .def("slotWriteGSDShapeSpec", &T::slotWriteGSDShapeSpec)
             .def("connectGSDShapeSpec", &T::connectGSDShapeSpec)
             ;
-
-    pybind11::enum_<typename T::energyShiftMode>(respapotentialpair,"energyShiftMode")
-            .value("no_shift", T::energyShiftMode::no_shift)
-            .value("shift", T::energyShiftMode::shift)
-            .value("xplor", T::energyShiftMode::xplor)
-            .export_values()
-            ;
 }
 #endif // __RESPA_POTENTIAL_PAIR_H__
