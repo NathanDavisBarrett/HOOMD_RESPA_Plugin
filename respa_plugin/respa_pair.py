@@ -51,6 +51,7 @@ class respa_lj(respa_pair, lj):
 
     def __init__(self, r_cut, nlist, group, name=None):
         hoomd.util.print_status_line();
+        lj.__init__(r_cut, nlist, name=None);
         respa_pair.__init__(self, r_cut, nlist, group, name);
 
         if not hoomd.context.exec_conf.isCUDAEnabled():
