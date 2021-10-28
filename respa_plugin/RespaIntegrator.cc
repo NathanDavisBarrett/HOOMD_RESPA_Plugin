@@ -193,7 +193,9 @@ void RespaIntegrator::update(unsigned int timestep)
                                        access_location::host,
                                        access_mode::readwrite);
 
+            m_exec_conf->msg->warning() << "########### CALLING COMPUTE. ###########\n";
             forceCompute->compute(timestep);
+            m_exec_conf->msg->warning() << "########### COMPUTE CALL COMPLETE. ###########\n";
 
             ArrayHandle<Scalar4>  h_force(forceCompute->getForceArray(),
                                           access_location::host,
@@ -209,7 +211,9 @@ void RespaIntegrator::update(unsigned int timestep)
                 Scalar forceY = h_force.data[i].y;
                 Scalar forceZ = h_force.data[i].z;
 
-                m_exec_conf->msg->warning() << " Fx:" << forceX << " Fy:" << forceY << " Fz:" << forceZ << "\n";
+                if (i % 100 == 0) {
+                    m_exec_conf->msg->warning() << " Fx:" << forceX << " Fy:" << forceY << " Fz:" << forceZ << "\n";
+                }
 
                 Scalar forceMag = pow((double)(forceX*forceX + forceY*forceY + forceZ*forceZ),0.5);
 
