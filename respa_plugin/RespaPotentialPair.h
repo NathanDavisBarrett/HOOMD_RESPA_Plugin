@@ -151,7 +151,6 @@ RespaPotentialPair< evaluator >::~RespaPotentialPair()
 template< class evaluator >
 void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 {
-    m_exec_conf->msg->warning() << "!RespaPotentialPair.h computeForces called.\n";
     // start by updating the neighborlist
     this->m_nlist->compute(timestep);
 
@@ -192,6 +191,7 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
     // for each particle
     for (int groupi = 0; groupi < (int)m_group->getNumMembersGlobal(); groupi++)
     {
+        m_exec_conf->msg->warning() << "!RespaPotentialPair.h computeForces iLoop:" << groupi << "\n";
         // Extract the actual particle index from the group index and assign it to "i"
         int tagi = m_group->getMemberTag(groupi);
         int i = m_pdata->getRTag(tagi);
