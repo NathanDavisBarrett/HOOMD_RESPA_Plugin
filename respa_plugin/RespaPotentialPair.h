@@ -225,7 +225,6 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
         const unsigned int size = (unsigned int)h_n_neigh.data[i];
         for (unsigned int k = 0; k < size; k++)
         {
-            m_exec_conf->msg->warning() << "!RespaPotentialPair.h computeForces iLoop:" << groupi << " jLoop:" << k << "\n";
             // access the index of this neighbor (MEM TRANSFER: 1 scalar)
             unsigned int j = h_nlist.data[myHead + k];
             assert(j < m_pdata->getN() + m_pdata->getNGhosts());
@@ -352,6 +351,8 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
                 }
             }
         }
+
+        m_exec_conf->msg->warning() << "!!>> fi.x:" << fi.x << " fi.y:" << fi.y << " fi.z:" << fi.z << "\n";
 
         // finally, increment the force, potential energy and virial for particle i
         unsigned int mem_idx = i;
