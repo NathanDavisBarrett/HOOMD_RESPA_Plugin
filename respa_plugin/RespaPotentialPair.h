@@ -191,7 +191,6 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
     // for each particle
     for (int groupi = 0; groupi < (int)m_group->getNumMembersGlobal(); groupi++)
     {
-        m_exec_conf->msg->warning() << "!RespaPotentialPair.h computeForces iLoop:" << groupi << "\n";
         // Extract the actual particle index from the group index and assign it to "i"
         int tagi = m_group->getMemberTag(groupi);
         int i = m_pdata->getRTag(tagi);
@@ -226,6 +225,7 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
         const unsigned int size = (unsigned int)h_n_neigh.data[i];
         for (unsigned int k = 0; k < size; k++)
         {
+            m_exec_conf->msg->warning() << "!RespaPotentialPair.h computeForces iLoop:" << groupi << " jLoop:" << k << "\n";
             // access the index of this neighbor (MEM TRANSFER: 1 scalar)
             unsigned int j = h_nlist.data[myHead + k];
             assert(j < m_pdata->getN() + m_pdata->getNGhosts());
