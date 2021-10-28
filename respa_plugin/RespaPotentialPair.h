@@ -135,9 +135,9 @@ RespaPotentialPair< evaluator >::RespaPotentialPair(std::shared_ptr<SystemDefini
 {
     m_exec_conf->msg->notice(5) << "Constructing RespaPotentialPair<" << evaluator::getName() << ">" << std::endl;
     m_exec_conf->msg->warning() << "RespaPotentialPair m_force is located at:" << &m_force << "\n";
-    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_ptr is located at:" << m_force_ptr << "\n";
+    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_ptr is located at:" << this->m_force_ptr << "\n";
     m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test is located at:" << &m_force_test << "\n";
-    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test_ptr is located at:" << m_force_test_ptr << "\n";
+    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test_ptr is located at:" << this->m_force_test_ptr << "\n";
 }
 
 template< class evaluator >
