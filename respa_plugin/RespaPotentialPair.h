@@ -108,8 +108,10 @@ public:
     std::shared_ptr<const ExecutionConfiguration> m_exec_conf =  this->PotentialPair<evaluator>::m_exec_conf;
     std::shared_ptr<Profiler> m_prof = this->PotentialPair<evaluator>::m_prof;
     const std::shared_ptr<ParticleData> m_pdata = this->PotentialPair<evaluator>::m_pdata;
-    GlobalArray<Scalar4> m_force_test = this->PotentialPair<evaluator>::m_force;                           //TODO: For some reason the calculated forces are being seen as zero. I assume it's because I'm referencing a different m_forces between the compute call and the reference call.
+    //GlobalArray<Scalar4> m_force_test = this->PotentialPair<evaluator>::m_force;                           //TODO: For some reason the calculated forces are being seen as zero. I assume it's because I'm referencing a different m_forces between the compute call and the reference call.
     GlobalArray<Scalar4> m_force = this->RespaForceCompute::m_force;
+    GlobalArray<Scalar4>* m_force_ptr = &(this->RespaForceCompute::m_force);
+    GlobalArray<Scalar4>* m_force_test_ptr = this->PotentialPair<evaluator>::m_force;
     GlobalArray<Scalar>  m_virial = this->PotentialPair<evaluator>::m_virial;
     unsigned int m_virial_pitch = this->PotentialPair<evaluator>::m_virial_pitch;
 
@@ -133,7 +135,9 @@ RespaPotentialPair< evaluator >::RespaPotentialPair(std::shared_ptr<SystemDefini
 {
     m_exec_conf->msg->notice(5) << "Constructing RespaPotentialPair<" << evaluator::getName() << ">" << std::endl;
     m_exec_conf->msg->warning() << "RespaPotentialPair m_force is located at:" << &m_force << "\n";
+    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_ptr is located at:" << m_force_ptr << "\n";
     m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test is located at:" << &m_force_test << "\n";
+    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test_ptr is located at:" << m_force_test_ptr << "\n";
 }
 
 template< class evaluator >
