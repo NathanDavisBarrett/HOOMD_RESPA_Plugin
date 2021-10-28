@@ -260,7 +260,6 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
             unsigned int typpair_idx = this->m_typpair_idx(typei, typej);
             param_type param = h_params.data[typpair_idx];
             Scalar rcutsq = h_rcutsq.data[typpair_idx];
-            m_exec_conf->msg->warning() << "Example rcutsq:" << rcutsq << std::endl;
             Scalar ronsq = Scalar(0.0);
             if (this->m_shift_mode == this->xplor)
                 ronsq = h_ronsq.data[typpair_idx];
