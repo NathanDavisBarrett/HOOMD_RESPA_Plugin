@@ -209,6 +209,8 @@ void RespaIntegrator::update(unsigned int timestep)
                 Scalar forceY = h_force.data[i].y;
                 Scalar forceZ = h_force.data[i].z;
 
+                m_exec_conf->msg->warning() << " Fx:" << forceX << " Fy:" << forceY << " Fz:" << forceZ << "\n";
+
                 Scalar forceMag = pow((double)(forceX*forceX + forceY*forceY + forceZ*forceZ),0.5);
 
                 if (maxForce == NULL) {

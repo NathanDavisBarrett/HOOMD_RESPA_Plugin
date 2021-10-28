@@ -223,8 +223,7 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
         // loop over all of the neighbors of this particle
         const unsigned int myHead = h_head_list.data[i];
         const unsigned int size = (unsigned int)h_n_neigh.data[i];
-        for (unsigned int k = 0; k < size; k++)
-        {
+        for (unsigned int k = 0; k < size; k++) {
             // access the index of this neighbor (MEM TRANSFER: 1 scalar)
             unsigned int j = h_nlist.data[myHead + k];
             assert(j < m_pdata->getN() + m_pdata->getNGhosts());
@@ -270,8 +269,7 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
             bool energy_shift = false;
             if (this->m_shift_mode == this->shift)
                 energy_shift = true;
-            else if (this->m_shift_mode == this->xplor)
-            {
+            else if (this->m_shift_mode == this->xplor) {
                 if (ronsq > rcutsq)
                     energy_shift = true;
             }
@@ -287,13 +285,10 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 
             bool evaluated = eval.evalForceAndEnergy(force_divr, pair_eng, energy_shift);
 
-            if (evaluated)
-            {
+            if (evaluated) {
                 // modify the potential for xplor shifting
-                if (this->m_shift_mode == this->xplor)
-                {
-                    if (rsq >= ronsq && rsq < rcutsq)
-                    {
+                if (this->m_shift_mode == this->xplor) {
+                    if (rsq >= ronsq && rsq < rcutsq) {
                         // Implement XPLOR smoothing (FLOPS: 16)
                         Scalar old_pair_eng = pair_eng;
                         Scalar old_force_divr = force_divr;
@@ -318,41 +313,36 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
                 Scalar force_div2r = force_divr * Scalar(0.5);
                 // add the force, potential energy and virial to the particle i
                 // (FLOPS: 8)
-                fi += dx*force_divr;
+                fi += dx * force_divr;
                 pei += pair_eng * Scalar(0.5);
-                if (compute_virial)
-                {
-                    virialxxi += force_div2r*dx.x*dx.x;
-                    virialxyi += force_div2r*dx.x*dx.y;
-                    virialxzi += force_div2r*dx.x*dx.z;
-                    virialyyi += force_div2r*dx.y*dx.y;
-                    virialyzi += force_div2r*dx.y*dx.z;
-                    virialzzi += force_div2r*dx.z*dx.z;
+                if (compute_virial) {
+                    virialxxi += force_div2r * dx.x * dx.x;
+                    virialxyi += force_div2r * dx.x * dx.y;
+                    virialxzi += force_div2r * dx.x * dx.z;
+                    virialyyi += force_div2r * dx.y * dx.y;
+                    virialyzi += force_div2r * dx.y * dx.z;
+                    virialzzi += force_div2r * dx.z * dx.z;
                 }
 
                 // add the force to particle j if we are using the third law (MEM TRANSFER: 10 scalars / FLOPS: 8)
                 // only add force to local particles
-                if (third_law && j < m_pdata->getN())
-                {
+                if (third_law && j < m_pdata->getN()) {
                     unsigned int mem_idx = j;
-                    h_force.data[mem_idx].x -= dx.x*force_divr;
-                    h_force.data[mem_idx].y -= dx.y*force_divr;
-                    h_force.data[mem_idx].z -= dx.z*force_divr;
+                    h_force.data[mem_idx].x -= dx.x * force_divr;
+                    h_force.data[mem_idx].y -= dx.y * force_divr;
+                    h_force.data[mem_idx].z -= dx.z * force_divr;
                     h_force.data[mem_idx].w += pair_eng * Scalar(0.5);
-                    if (compute_virial)
-                    {
-                        h_virial.data[0*m_virial_pitch+mem_idx] += force_div2r*dx.x*dx.x;
-                        h_virial.data[1*m_virial_pitch+mem_idx] += force_div2r*dx.x*dx.y;
-                        h_virial.data[2*m_virial_pitch+mem_idx] += force_div2r*dx.x*dx.z;
-                        h_virial.data[3*m_virial_pitch+mem_idx] += force_div2r*dx.y*dx.y;
-                        h_virial.data[4*m_virial_pitch+mem_idx] += force_div2r*dx.y*dx.z;
-                        h_virial.data[5*m_virial_pitch+mem_idx] += force_div2r*dx.z*dx.z;
+                    if (compute_virial) {
+                        h_virial.data[0 * m_virial_pitch + mem_idx] += force_div2r * dx.x * dx.x;
+                        h_virial.data[1 * m_virial_pitch + mem_idx] += force_div2r * dx.x * dx.y;
+                        h_virial.data[2 * m_virial_pitch + mem_idx] += force_div2r * dx.x * dx.z;
+                        h_virial.data[3 * m_virial_pitch + mem_idx] += force_div2r * dx.y * dx.y;
+                        h_virial.data[4 * m_virial_pitch + mem_idx] += force_div2r * dx.y * dx.z;
+                        h_virial.data[5 * m_virial_pitch + mem_idx] += force_div2r * dx.z * dx.z;
                     }
                 }
             }
         }
-
-        m_exec_conf->msg->warning() << "!!>> fi.x:" << fi.x << " fi.y:" << fi.y << " fi.z:" << fi.z << "\n";
 
         // finally, increment the force, potential energy and virial for particle i
         unsigned int mem_idx = i;
