@@ -151,6 +151,7 @@ RespaPotentialPair< evaluator >::~RespaPotentialPair()
 template< class evaluator >
 void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 {
+    m_exec_conf->msg->warning() << "!RespaPotentialPair.h computeForces called.\n";
     // start by updating the neighborlist
     this->m_nlist->compute(timestep);
 
