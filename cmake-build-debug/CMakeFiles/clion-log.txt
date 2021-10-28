@@ -1,14 +1,14 @@
-"C:\Program Files\JetBrains\CLion 2021.1.2\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - NMake Makefiles" C:\Users\rocki\Documents\WORK-Chicago\HoomdMultipleTimestepPlugin_Example_Updater_Base
--- The C compiler identification is MSVC 19.24.28314.0
--- The CXX compiler identification is MSVC 19.24.28314.0
+/snap/clion/169/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - Unix Makefiles" /home/nathan/Documents/WORK-Chicago/MultipleTimestep/hoomdRESPA_SperatePlugin/multipleTimestepPlugin_Example_Plugin_Base
+-- The C compiler identification is GNU 10.3.0
+-- The CXX compiler identification is GNU 10.3.0
 -- Detecting C compiler ABI info
 -- Detecting C compiler ABI info - done
--- Check for working C compiler: C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.24.28314/bin/Hostx86/x86/cl.exe - skipped
+-- Check for working C compiler: /usr/bin/cc - skipped
 -- Detecting C compile features
 -- Detecting C compile features - done
 -- Detecting CXX compiler ABI info
 -- Detecting CXX compiler ABI info - done
--- Check for working CXX compiler: C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.24.28314/bin/Hostx86/x86/cl.exe - skipped
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
 CMake Deprecation Warning at CMakeLists.txt:2 (CMAKE_MINIMUM_REQUIRED):
@@ -19,14 +19,14 @@ CMake Deprecation Warning at CMakeLists.txt:2 (CMAKE_MINIMUM_REQUIRED):
   CMake that the project does not need compatibility with older versions.
 
 
--- Found PythonInterp: C:/Program Files (x86)/Microsoft Visual Studio/Shared/Python37_64/python.exe (found version "3.7.5") 
+-- Found PythonInterp: /usr/bin/python (found version "2.7.18") 
 -- Python output: Traceback (most recent call last):
   File "<string>", line 4, in <module>
-ModuleNotFoundError: No module named 'hoomd'
+ImportError: No module named hoomd
 
 -- Looking for a HOOMD installation at Traceback (most recent call last):
   File "<string>", line 4, in <module>
-ModuleNotFoundError: No module named 'hoomd'
+ImportError: No module named hoomd
 
 CMake Error at FindHOOMD.cmake:46 (message):
   Could not find hoomd installation, either set HOOMD_ROOT or set
@@ -36,4 +36,4 @@ Call Stack (most recent call first):
 
 
 -- Configuring incomplete, errors occurred!
-See also "C:/Users/rocki/Documents/WORK-Chicago/HoomdMultipleTimestepPlugin_Example_Updater_Base/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "/home/nathan/Documents/WORK-Chicago/MultipleTimestep/hoomdRESPA_SperatePlugin/multipleTimestepPlugin_Example_Plugin_Base/cmake-build-debug/CMakeFiles/CMakeOutput.log".
