@@ -108,10 +108,12 @@ public:
     std::shared_ptr<const ExecutionConfiguration> m_exec_conf =  this->PotentialPair<evaluator>::m_exec_conf;
     std::shared_ptr<Profiler> m_prof = this->PotentialPair<evaluator>::m_prof;
     const std::shared_ptr<ParticleData> m_pdata = this->PotentialPair<evaluator>::m_pdata;
-    //GlobalArray<Scalar4> m_force_test = this->PotentialPair<evaluator>::m_force;                           //TODO: For some reason the calculated forces are being seen as zero. I assume it's because I'm referencing a different m_forces between the compute call and the reference call.
+    //GlobalArray<Scalar4> m_force_test = this->PotentialPair<evaluator>::m_force;
     //GlobalArray<Scalar4>* m_force_test_ptr = &(this->PotentialPair<evaluator>::m_force);
-    GlobalArray<Scalar4> m_force = GlobalArray<Scalar4>();//this->RespaForceCompute::m_force; //NOTE: DO NOT USE THIS ONE. It references the wrong object. Instead, use the pointer.
+    GlobalArray<Scalar4> m_force = GlobalArray<Scalar4>();//NOTE: DO NOT USE THIS ONE. Instead, use the pointer.
     GlobalArray<Scalar4>* m_force_ptr = &(this->RespaForceCompute::m_force);
+    //TODO: Next, try putting a print statement in the low-level ForceCompute class (from where "compute" might be being called from) and see if the pointers are lining up.
+
     GlobalArray<Scalar>  m_virial = this->PotentialPair<evaluator>::m_virial;
     unsigned int m_virial_pitch = this->PotentialPair<evaluator>::m_virial_pitch;
 
