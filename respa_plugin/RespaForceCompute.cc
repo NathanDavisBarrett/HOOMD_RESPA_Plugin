@@ -32,7 +32,7 @@ RespaForceCompute::RespaForceCompute(std::shared_ptr<SystemDefinition> sysdef, s
         : ForceCompute(sysdef)
 {
     m_group = group;
-    m_exec_conf->msg->warning() << "ForceCompute m_force is located at:" << &m_force << "\n";
+    //m_exec_conf->msg->warning() << "ForceCompute m_force is located at:" << &m_force << "\n";
 }
 
 /*! Frees allocated memory

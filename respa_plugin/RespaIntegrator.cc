@@ -212,7 +212,7 @@ void RespaIntegrator::update(unsigned int timestep)
                 Scalar forceZ = h_force.data[i].z;
 
                 if (i % 100 == 0) {
-                    m_exec_conf->msg->warning() << " Fx:" << forceX << " Fy:" << forceY << " Fz:" << forceZ << "\n";
+                    //m_exec_conf->msg->warning() << " Fx:" << forceX << " Fy:" << forceY << " Fz:" << forceZ << "\n";
                 }
 
                 Scalar forceMag = pow((double)(forceX*forceX + forceY*forceY + forceZ*forceZ),0.5);

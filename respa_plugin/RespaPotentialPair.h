@@ -108,10 +108,10 @@ public:
     std::shared_ptr<const ExecutionConfiguration> m_exec_conf =  this->PotentialPair<evaluator>::m_exec_conf;
     std::shared_ptr<Profiler> m_prof = this->PotentialPair<evaluator>::m_prof;
     const std::shared_ptr<ParticleData> m_pdata = this->PotentialPair<evaluator>::m_pdata;
-    //GlobalArray<Scalar4> m_force_test = this->PotentialPair<evaluator>::m_force;
-    //GlobalArray<Scalar4>* m_force_test_ptr = &(this->PotentialPair<evaluator>::m_force);
-    GlobalArray<Scalar4> m_force = GlobalArray<Scalar4>();//NOTE: DO NOT USE THIS ONE. Instead, use the pointer.
-    GlobalArray<Scalar4>* m_force_ptr = &(this->RespaForceCompute::m_force);
+    GlobalArray<Scalar4> m_force = GlobalArray<Scalar4>(); //this->PotentialPair<evaluator>::m_force;
+    GlobalArray<Scalar4>* m_force_ptr = &(this->PotentialPair<evaluator>::m_force);
+    //GlobalArray<Scalar4> m_force_test = GlobalArray<Scalar4>(); //this->RespaForceCompute::m_force //NOTE: DO NOT USE THIS ONE. Instead, use the pointer.
+    //GlobalArray<Scalar4>* m_force_test_ptr = &(this->RespaForceCompute::m_force);
     //TODO: Next, try putting a print statement in the low-level ForceCompute class (from where "compute" might be being called from) and see if the pointers are lining up.
 
     GlobalArray<Scalar>  m_virial = this->PotentialPair<evaluator>::m_virial;
@@ -135,11 +135,11 @@ RespaPotentialPair< evaluator >::RespaPotentialPair(std::shared_ptr<SystemDefini
                                           const std::string& log_suffix)
         : PotentialPair<evaluator>(sysdef,nlist,log_suffix), RespaForceCompute(sysdef, group)
 {
-//    m_exec_conf->msg->notice(5) << "Constructing RespaPotentialPair<" << evaluator::getName() << ">" << std::endl;
-//    m_exec_conf->msg->warning() << "RespaPotentialPair m_force is located at:" << &(this->m_force) << "\n";
-//    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_ptr is located at:" << this->m_force_ptr << "\n";
-//    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test is located at:" << &(this->m_force_test) << "\n";
-//    m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test_ptr is located at:" << this->m_force_test_ptr << "\n";
+    //m_exec_conf->msg->notice(5) << "Constructing RespaPotentialPair<" << evaluator::getName() << ">" << std::endl;
+    //m_exec_conf->msg->warning() << "RespaPotentialPair m_force is located at:" << &(this->m_force) << "\n";
+    //m_exec_conf->msg->warning() << "RespaPotentialPair m_force_ptr is located at:" << this->m_force_ptr << "\n";
+    //m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test is located at:" << &(this->m_force_test) << "\n";
+    //m_exec_conf->msg->warning() << "RespaPotentialPair m_force_test_ptr is located at:" << this->m_force_test_ptr << "\n";
 }
 
 template< class evaluator >
@@ -159,7 +159,7 @@ RespaPotentialPair< evaluator >::~RespaPotentialPair()
 template< class evaluator >
 void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 {
-    m_exec_conf->msg->warning() << "@@@@@@@@@@@ compute call received @@@@@@@@@@@";
+    //m_exec_conf->msg->warning() << "@@@@@@@@@@@ compute call received @@@@@@@@@@@\n";
     // start by updating the neighborlist
     this->m_nlist->compute(timestep);
 
@@ -237,7 +237,7 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
             unsigned int j = h_nlist.data[myHead + k];
             assert(j < m_pdata->getN() + m_pdata->getNGhosts());
 
-            // If the nighboring particle is not in the group, continue.
+            // If the neighboring particle is not in the group, continue.
             if (!(m_group->isMember(j))) {
                 continue;
             }
@@ -259,7 +259,12 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
                 qj = h_charge.data[j];
 
             // apply periodic boundary conditions
+            Scalar3 olddx = dx;
             dx = box.minImage(dx);
+            if (olddx != dx) {
+                m_exec_conf->msg->warning() << "!!!!!!!!!!!Periodic Boundary Condition Applied!\n";
+            }
+            //TODO: What does box.minImage do? How can it apply period boundary conditions without knowing the position, only the change?
 
             // calculate r_ij squared (FLOPS: 5)
             Scalar rsq = dot(dx, dx);
@@ -360,8 +365,8 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
         h_force.data[mem_idx].z += fi.z;
         h_force.data[mem_idx].w += pei;
         if (i % 100 == 0) {
-            m_exec_conf->msg->warning() << "!PotPr.h>> These should not be zero:" << fi.x << " " << fi.y << " " << fi.z
-                                        << "\n";
+            //m_exec_conf->msg->warning() << "!PotPr.h>> These should not be zero:" << fi.x << " " << fi.y << " " << fi.z
+            //                            << "\n";
         }
 
         if (compute_virial)
