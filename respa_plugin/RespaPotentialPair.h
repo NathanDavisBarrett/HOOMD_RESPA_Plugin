@@ -383,8 +383,8 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 */
 template < class T > void export_RespaPotentialPair(pybind11::module& m, const std::string& name)
 {
-    pybind11::print("ADDED RESPAFORCECOMPUTE BASE REFERENCE.");
-    pybind11::class_<T, std::shared_ptr<T> > respapotentialpair(m, name.c_str(), pybind11::base<RespaForceCompute>());
+    //pybind11::print("ADDED RESPAFORCECOMPUTE BASE REFERENCE.");
+    pybind11::class_<T, std::shared_ptr<T>> respapotentialpair(m, name.c_str(), pybind11::base<RespaForceCompute>());
     respapotentialpair.def(pybind11::init< std::shared_ptr<SystemDefinition>, std::shared_ptr<NeighborList>, std::shared_ptr <ParticleGroup>, const std::string& >())
             .def("setParams", &T::setParams)
             .def("setRcut", &T::setRcut)

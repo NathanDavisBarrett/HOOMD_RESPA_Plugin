@@ -1,14 +1,14 @@
 // Copyright (c) 2009-2021 The Regents of the University of Michigan
 // This file is part of the HOOMD-blue project, released under the BSD 3-Clause License.
 
-#include "hoomd/ForceCompute.h"
+#include "RespaForceCompute.h"
 #include "hoomd/GPUArray.h"
 #include <memory>
 
 #include <vector>
 
-/*! \file PotentialBond.h
-    \brief Declares PotentialBond
+/*! \file RespaPotentialBond.h
+    \brief Declares RespaPotentialBond
 */
 
 #ifdef __HIPCC__
@@ -17,45 +17,26 @@
 
 #include <pybind11/pybind11.h>
 
-#ifndef __POTENTIALBOND_H__
-#define __POTENTIALBOND_H__
+#ifndef __RESPA_POTENTIALBOND_H__
+#define __RESPA_POTENTIALBOND_H__
 
-/*! Bond potential with evaluator support
+/*! Bond potential with evaluator support for RESPA integrator
 
     \ingroup computes
 */
-template<class evaluator> class PotentialBond : public ForceCompute
+template<class evaluator> class RespaPotentialBond : public PotentialBond<evaluator>, public RespaForceCompute
 {
 public:
-    //! Param type from evaluator
-    typedef typename evaluator::param_type param_type;
+//    //! Param type from evaluator
+//    typedef typename evaluator::param_type param_type;
 
     //! Constructs the compute
-    PotentialBond(std::shared_ptr<SystemDefinition> sysdef);
+    RespaPotentialBond(std::shared_ptr<SystemDefinition> sysdef);
 
     //! Destructor
-    virtual ~PotentialBond();
-
-    /// Set the parameters
-    virtual void setParams(unsigned int type, const param_type& param);
-    virtual void setParamsPython(std::string type, pybind11::dict param);
-
-    /// Get the parameters
-    pybind11::dict getParams(std::string type);
-
-    /// Validate bond type
-    virtual void validateType(unsigned int type, std::string action);
-
-#ifdef ENABLE_MPI
-    //! Get ghost particle fields requested by this pair potential
-    virtual CommFlags getRequestedCommFlags(uint64_t timestep);
-#endif
+    virtual ~RespaPotentialBond();
 
 protected:
-    GPUArray<param_type> m_params;         //!< Bond parameters per type
-    std::shared_ptr<BondData> m_bond_data; //!< Bond data to use in computing bonds
-    std::string m_prof_name;               //!< Cached profiler name
-
     //! Actually compute the forces
     virtual void computeForces(uint64_t timestep);
 };
@@ -63,83 +44,23 @@ protected:
 /*! \param sysdef System to compute forces on
  */
 template<class evaluator>
-PotentialBond<evaluator>::PotentialBond(std::shared_ptr<SystemDefinition> sysdef)
-        : ForceCompute(sysdef)
+RespaPotentialBond<evaluator>::RespaPotentialBond(std::shared_ptr<SystemDefinition> sysdef)
+        : PotentialBond(sysdef)
 {
-    m_exec_conf->msg->notice(5) << "Constructing PotentialBond<" << evaluator::getName() << ">"
-                                << std::endl;
-    assert(m_pdata);
-
-    // access the bond data for later use
-    m_bond_data = m_sysdef->getBondData();
-    m_prof_name = std::string("Bond ") + evaluator::getName();
-
-    // allocate the parameters
-    GPUArray<param_type> params(m_bond_data->getNTypes(), m_exec_conf);
-    m_params.swap(params);
-}
-
-template<class evaluator> PotentialBond<evaluator>::~PotentialBond()
-{
-    m_exec_conf->msg->notice(5) << "Destroying PotentialBond<" << evaluator::getName() << ">"
+    m_exec_conf->msg->notice(5) << "Constructing RespaPotentialBond<" << evaluator::getName() << ">"
                                 << std::endl;
 }
 
-/*! \param type Type of the bond to set parameters for
-    \param param Parameter to set
-
-    Sets the parameters for the potential of a particular bond type
-*/
-template<class evaluator>
-void PotentialBond<evaluator>::validateType(unsigned int type, std::string action)
+template<class evaluator> RespaPotentialBond<evaluator>::~RespaPotentialBond()
 {
-    // make sure the type is valid
-    if (type >= m_bond_data->getNTypes())
-    {
-        std::string err = "Invalid bond type specified.";
-        err += "Error " + action + " in PotentialBond";
-        throw std::runtime_error(err);
-    }
+    m_exec_conf->msg->notice(5) << "Destroying RespaPotentialBond<" << evaluator::getName() << ">"
+                                << std::endl;
 }
 
-template<class evaluator>
-void PotentialBond<evaluator>::setParams(unsigned int type, const param_type& param)
-{
-    // make sure the type is valid
-    validateType(type, "setting params");
-    ArrayHandle<param_type> h_params(m_params, access_location::host, access_mode::readwrite);
-    h_params.data[type] = param;
-}
-
-/*! \param types Type of the bond to set parameters for using string
-    \param param Parameter to set
-
-    Sets the parameters for the potential of a particular bond type
-*/
-template<class evaluator>
-void PotentialBond<evaluator>::setParamsPython(std::string type, pybind11::dict param)
-{
-    auto itype = m_bond_data->getTypeByName(type);
-    auto struct_param = param_type(param);
-    setParams(itype, struct_param);
-}
-
-/*! \param types Type of the bond to set parameters for using string
-    \param param Parameter to set
-
-    Sets the parameters for the potential of a particular bond type
-*/
-template<class evaluator> pybind11::dict PotentialBond<evaluator>::getParams(std::string type)
-{
-    auto itype = m_bond_data->getTypeByName(type);
-    validateType(itype, "getting params");
-    ArrayHandle<param_type> h_params(m_params, access_location::host, access_mode::read);
-    return h_params.data[itype].asDict();
-}
-
+/*
 /*! Actually perform the force computation
     \param timestep Current time step
- */
+ * /
 template<class evaluator> void PotentialBond<evaluator>::computeForces(uint64_t timestep)
 {
     if (m_prof)
@@ -313,6 +234,8 @@ template<class evaluator> void PotentialBond<evaluator>::computeForces(uint64_t 
         m_prof->pop();
 }
 
+*/
+
 #ifdef ENABLE_MPI
 /*! \param timestep Current time step
  */
@@ -339,9 +262,9 @@ CommFlags PotentialBond<evaluator>::getRequestedCommFlags(uint64_t timestep)
 /*! \param name Name of the class in the exported python module
     \tparam T class type to export. \b Must be an instantiated PotentialBOnd class template.
 */
-template<class T> void export_PotentialBond(pybind11::module& m, const std::string& name)
+template<class T> void export_RespaPotentialBond(pybind11::module& m, const std::string& name)
 {
-    pybind11::class_<T, ForceCompute, std::shared_ptr<T>>(m, name.c_str())
+    pybind11::class_<T, RespaForceCompute, std::shared_ptr<T> >(m, name.c_str())
             .def(pybind11::init<std::shared_ptr<SystemDefinition>>())
             .def("setParams", &T::setParamsPython)
             .def("getParams", &T::getParams);
