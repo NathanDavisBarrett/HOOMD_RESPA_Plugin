@@ -38,7 +38,7 @@ public:
 
 protected:
     //! Actually compute the forces
-    virtual void computeForces(uint64_t timestep);
+    // virtual void computeForces(uint64_t timestep);
 };
 
 /*! \param sysdef System to compute forces on
