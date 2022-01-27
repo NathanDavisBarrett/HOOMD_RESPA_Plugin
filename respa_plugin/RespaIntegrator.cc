@@ -57,7 +57,7 @@ Scalar RespaIntegrator::calculateVelScalingFactor(int numSubsteps) {
     return (m_deltaT / numSubsteps);
 }
 
-void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<RespaForceCompute> forceCompute, int numSubsteps) {
+void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<ForceCompute> forceCompute, int numSubsteps) {
     Scalar forceScalingFactor = NULL;
     Scalar velScalingFactor = NULL;
 
@@ -82,12 +82,12 @@ void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<RespaForceCompute
 
 /*! Create the substeps needed for each loop and subloop in the RESPA algorithm.
 */
-void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>> forceGroups, int parentSubsteps) {
+void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> forceGroups, int parentSubsteps) {
     //m_exec_conf->msg->warning() << "createSubsteps called" << std::endl;
 
-    std::pair<std::shared_ptr<RespaForceCompute>, int> topGroup = forceGroups.at(0);
+    std::pair<std::shared_ptr<ForceCompute>, int> topGroup = forceGroups.at(0);
 
-    std::shared_ptr<RespaForceCompute> topForce = topGroup.first;
+    std::shared_ptr<ForceCompute> topForce = topGroup.first;
     int topSubsteps = topGroup.second;
 
     if ((topSubsteps % parentSubsteps) != 0) {
@@ -104,7 +104,7 @@ void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<Respa
             this->addSubstep(POS_STEP, NULL, topSubsteps);
         }
         else {
-            std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>> tempGroups = forceGroups;
+            std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> tempGroups = forceGroups;
 
             tempGroups.erase(tempGroups.begin());
 
@@ -121,7 +121,7 @@ void RespaIntegrator::prepRun(unsigned int timestep) {
 
     //First, make sure the vector of ForceComputes are organized to put the least frequent force at the front, and the most frequent force at the back.
     struct SortHelper {
-        inline bool operator() (const std::pair<std::shared_ptr<RespaForceCompute>, int> pair1, const std::pair<std::shared_ptr<RespaForceCompute>, int> pair2) {
+        inline bool operator() (const std::pair<std::shared_ptr<ForceCompute>, int> pair1, const std::pair<std::shared_ptr<ForceCompute>, int> pair2) {
             return (pair1.second < pair2.second);
         }
     };
@@ -186,7 +186,7 @@ void RespaIntegrator::update(unsigned int timestep)
         int stepType = m_respa_step_types.at(i);
         if (stepType == VEL_STEP) {
             //m_exec_conf->msg->warning() << "\t\tVEL_STEP" << std::endl;
-            std::shared_ptr<RespaForceCompute> forceCompute = m_respa_step_force_computes.at(i);
+            std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
             Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
 
             ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
@@ -394,9 +394,9 @@ bool RespaIntegrator::getAnisotropicMode() {
 /* Add a new force/frequency pair to the integrator.
  *
  */
-void RespaIntegrator::addForce(std::shared_ptr<RespaForceCompute> force, int frequency) {
+void RespaIntegrator::addForce(std::shared_ptr<ForceCompute> force, int frequency) {
     //m_exec_conf->msg->warning() << "addForce called" << std::endl;
-    std::pair<std::shared_ptr<RespaForceCompute>, int> newForce;
+    std::pair<std::shared_ptr<ForceCompute>, int> newForce;
     newForce.first = force;
     newForce.second = frequency;
     m_respa_forces.push_back(newForce);
