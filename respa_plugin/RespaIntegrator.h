@@ -2,8 +2,6 @@
 // Created by nathan on 8/12/21.
 //
 
-//TEST.
-
 #ifndef RESPAPLUGIN_RESPAINTEGRATOR_H
 #define RESPAPLUGIN_RESPAINTEGRATOR_H
 
@@ -36,13 +34,13 @@
 class RespaIntegrator : public Integrator
         {
         private:
-            std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>> m_respa_forces;
+            std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> m_respa_forces;
 
             const int VEL_STEP = 0;
             const int POS_STEP = 1;
 
             std::vector<int> m_respa_step_types;
-            std::vector<std::shared_ptr<RespaForceCompute>> m_respa_step_force_computes;
+            std::vector<std::shared_ptr<ForceCompute>> m_respa_step_force_computes;
             std::vector<Scalar> m_respa_step_force_scaling_factors;
             std::vector<Scalar> m_respa_step_vel_scaling_factors;
 
@@ -95,9 +93,9 @@ class RespaIntegrator : public Integrator
 
             Scalar calculateVelScalingFactor(int numSubsteps);
 
-            void addSubstep(int stepType, std::shared_ptr<RespaForceCompute> forceCompute, int numSubsteps);
+            void addSubstep(int stepType, std::shared_ptr<ForceCompute> forceCompute, int numSubsteps);
 
-            void createSubsteps(std::vector<std::pair<std::shared_ptr<RespaForceCompute>, int>>, int);
+            void createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>>, int);
 
             /// Prepare for the run
             void prepRun(unsigned int timestep);
@@ -106,7 +104,7 @@ class RespaIntegrator : public Integrator
             void computeNetForce(unsigned int timestep);
 
             /// Add a new force/frequency pair.
-            void addForce(std::shared_ptr<RespaForceCompute>, int);
+            void addForce(std::shared_ptr<ForceCompute>, int);
 
         protected:
             AnisotropicMode m_aniso_mode; //!< Anisotropic mode for this integrator
