@@ -1,3 +1,6 @@
+include_directories(/home/ndbarrett/miniconda3/envs/hoomdRESPA/lib/python3.9/site-packages/pybind11/include)
+
+
 project(respa_plugin)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6.2 FATAL_ERROR)
 
