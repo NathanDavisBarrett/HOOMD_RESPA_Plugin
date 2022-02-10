@@ -240,18 +240,24 @@ void RespaIntegrator::update(unsigned int timestep)
             Scalar minD = NULL;
             Scalar avgD = NULL;
 
+            const BoxDim& box = m_pdata->getGlobalBox();
+
             for (unsigned int i = 0; i < m_pdata->getN(); i++)
             {
-                //Scalar3 d = velScalingFactor * h_vel.data[i]
-                Scalar dx = velScalingFactor * h_vel.data[i].x;
-                Scalar dy = velScalingFactor * h_vel.data[i].y;
-                Scalar dz = velScalingFactor * h_vel.data[i].z;
+                Scalar3 pos = make_scalar3(
+                    h_pos.data[i].x + velScalingFactor * h_vel.data[i].x,
+                    h_pos.data[i].y + velScalingFactor * h_vel.data[i].y,
+                    h_pos.data[i].z + velScalingFactor * h_vel.data[i].z);
 
-                h_pos.data[i].x = h_pos.data[i].x + velScalingFactor * h_vel.data[i].x;
-                h_pos.data[i].y = h_pos.data[i].y + velScalingFactor * h_vel.data[i].y;
-                h_pos.data[i].z = h_pos.data[i].z + velScalingFactor * h_vel.data[i].z;
+                pos = box.minImage(pos);
 
-                //dx = box.minImage(dx);
+                h_pos.data[i].x = pos.x;
+                h_pos.data[i].y = pos.y;
+                h_pos.data[i].z = pos.z;
+
+                // h_pos.data[i].x = h_pos.data[i].x + velScalingFactor * h_vel.data[i].x;
+                // h_pos.data[i].y = h_pos.data[i].y + velScalingFactor * h_vel.data[i].y;
+                // h_pos.data[i].z = h_pos.data[i].z + velScalingFactor * h_vel.data[i].z;
             }
 
             //m_exec_conf->msg->warning() << "\t\tminD: " << minD << std::endl;
