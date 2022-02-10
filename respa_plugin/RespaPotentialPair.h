@@ -108,10 +108,17 @@ public:
     std::shared_ptr<const ExecutionConfiguration> m_exec_conf =  this->PotentialPair<evaluator>::m_exec_conf;
     std::shared_ptr<Profiler> m_prof = this->PotentialPair<evaluator>::m_prof;
     const std::shared_ptr<ParticleData> m_pdata = this->PotentialPair<evaluator>::m_pdata;
-    //GlobalArray<Scalar4> m_force_test = this->PotentialPair<evaluator>::m_force;
-    //GlobalArray<Scalar4>* m_force_test_ptr = &(this->PotentialPair<evaluator>::m_force);
+
+    //NOTE HERE: Since RespaPotentialPair inherits from both PotentialPair and RespaForceCompute,
+    //           you must supply which of the two paths to follow when inheriting.
+    //           Since the members will be called from and used by the RespaIntegrator,
+    //           Whichever base class RespaIntegrator uses should be referenced using the pointer
+    //           below. (i.e. If RespaIntegrator uses a list of RespaForceCompute objects,
+    //           use RespaForceCompute::m_force. If RespaIntegrator uses a list of
+    //           ForceCompute objects, follow the base ForceCompute path and use
+    //           PotentialPair<evaluator>::m_force)
     GlobalArray<Scalar4> m_force = GlobalArray<Scalar4>();//NOTE: DO NOT USE THIS ONE. Instead, use the pointer.
-    GlobalArray<Scalar4>* m_force_ptr = &(this->RespaForceCompute::m_force);
+    GlobalArray<Scalar4>* m_force_ptr = &(this->PotentialPair<evaluator>::m_force);
 
     GlobalArray<Scalar>  m_virial = this->PotentialPair<evaluator>::m_virial;
     unsigned int m_virial_pitch = this->PotentialPair<evaluator>::m_virial_pitch;
@@ -182,7 +189,6 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
     //force arrays
     ArrayHandle<Scalar4> h_force(*m_force_ptr,access_location::host, access_mode::overwrite);
     ArrayHandle<Scalar>  h_virial(m_virial,access_location::host, access_mode::overwrite);
-
 
     const BoxDim& box = m_pdata->getGlobalBox();
     ArrayHandle<Scalar> h_ronsq(this->m_ronsq, access_location::host, access_mode::read);
@@ -359,7 +365,7 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
         h_force.data[mem_idx].z += fi.z;
         h_force.data[mem_idx].w += pei;
         // if (i % 100 == 0) {
-        //     m_exec_conf->msg->warning() << "!PotPr.h>> These should not be zero:" << fi.x << " " << fi.y << " " << fi.z
+        //     m_exec_conf->msg->warning() << "!PotPr.h>> These should not be zero:" << h_force.data[mem_idx].x << " " << h_force.data[mem_idx].y << " " << h_force.data[mem_idx].z
         //                                 << "\n";
         // }
 

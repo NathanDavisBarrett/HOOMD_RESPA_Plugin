@@ -211,27 +211,9 @@ void RespaIntegrator::update(unsigned int timestep)
                 Scalar forceY = h_force.data[i].y;
                 Scalar forceZ = h_force.data[i].z;
 
-                if (i % 100 == 0) {
-                    //m_exec_conf->msg->warning() << " Fx:" << forceX << " Fy:" << forceY << " Fz:" << forceZ << "\n";
-                }
-
-                Scalar forceMag = pow((double)(forceX*forceX + forceY*forceY + forceZ*forceZ),0.5);
-
-                if (maxForce == NULL) {
-                    maxForce = forceMag;
-                }
-                else if (forceMag > maxForce) {
-                    maxForce = forceMag;
-                }
-
-                if (minForce == NULL) {
-                    minForce = forceMag;
-                }
-                else if (forceMag < minForce) {
-                    minForce = forceMag;
-                }
-
-                avgForce = ((avgForce * (double)i) + forceMag) / ((double)(i+1));
+                // if (i % 100 == 0) {
+                //     m_exec_conf->msg->warning() << " Fx:" << forceX << " Fy:" << forceY << " Fz:" << forceZ << "\n";
+                // }
 
                 h_vel.data[i].x = h_vel.data[i].x + forceScalingFactor * forceX / h_vel.data[i].w; //The "w" is the particle mass. For another example of this usage, see ParticleData::getMass
                 h_vel.data[i].y = h_vel.data[i].y + forceScalingFactor * forceY / h_vel.data[i].w;
@@ -260,31 +242,16 @@ void RespaIntegrator::update(unsigned int timestep)
 
             for (unsigned int i = 0; i < m_pdata->getN(); i++)
             {
+                //Scalar3 d = velScalingFactor * h_vel.data[i]
                 Scalar dx = velScalingFactor * h_vel.data[i].x;
                 Scalar dy = velScalingFactor * h_vel.data[i].y;
                 Scalar dz = velScalingFactor * h_vel.data[i].z;
 
-                Scalar d = pow((double)(dx*dx + dy*dy + dz*dz),0.5);
-
-                if (maxD == NULL) {
-                    maxD = d;
-                }
-                else if (d > maxD){
-                    maxD = d;
-                }
-
-                if (minD == NULL) {
-                    minD = d;
-                }
-                else if (d < minD) {
-                    minD = d;
-                }
-
-                avgD = (avgD*((double)i) + d) / ((double)(i+1));
-
                 h_pos.data[i].x = h_pos.data[i].x + velScalingFactor * h_vel.data[i].x;
                 h_pos.data[i].y = h_pos.data[i].y + velScalingFactor * h_vel.data[i].y;
                 h_pos.data[i].z = h_pos.data[i].z + velScalingFactor * h_vel.data[i].z;
+
+                //dx = box.minImage(dx);
             }
 
             //m_exec_conf->msg->warning() << "\t\tminD: " << minD << std::endl;
