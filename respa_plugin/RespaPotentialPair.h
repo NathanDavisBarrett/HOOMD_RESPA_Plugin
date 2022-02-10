@@ -158,7 +158,7 @@ RespaPotentialPair< evaluator >::~RespaPotentialPair()
 template< class evaluator >
 void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 {
-    m_exec_conf->msg->warning() << "@@@@@@@@@@@ compute call received @@@@@@@@@@@";
+    //m_exec_conf->msg->warning() << "@@@@@@@@@@@ compute call received @@@@@@@@@@@";
     // start by updating the neighborlist
     this->m_nlist->compute(timestep);
 
@@ -358,10 +358,10 @@ void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
         h_force.data[mem_idx].y += fi.y;
         h_force.data[mem_idx].z += fi.z;
         h_force.data[mem_idx].w += pei;
-        if (i % 100 == 0) {
-            m_exec_conf->msg->warning() << "!PotPr.h>> These should not be zero:" << fi.x << " " << fi.y << " " << fi.z
-                                        << "\n";
-        }
+        // if (i % 100 == 0) {
+        //     m_exec_conf->msg->warning() << "!PotPr.h>> These should not be zero:" << fi.x << " " << fi.y << " " << fi.z
+        //                                 << "\n";
+        // }
 
         if (compute_virial)
         {

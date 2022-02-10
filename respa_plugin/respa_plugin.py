@@ -1,3 +1,5 @@
+# Note: This file might be depricated....
+
 print("Importing RESPA plugin. (1/27/2022 11:52 MDT)")
 
 import itertools
