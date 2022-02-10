@@ -8,7 +8,5 @@
 # NOTE: adjust the import statement to match the name of the template
 # (here: respa_plugin)
 
-print("importing respa_pair")
 from hoomd.respa_plugin import respa_pair
 from hoomd.respa_plugin import respa_integrator
-

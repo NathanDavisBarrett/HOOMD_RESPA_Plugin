@@ -21,13 +21,11 @@ an indication that something has gone wrong.
 
 # NOTE: As seen on the __init__ function for pair.lj, self.cpp_force and self.cpp_class are both set in the child class. So we're good. PFEW!
 
-print("respa_pair file.")
 from hoomd.md.pair import pair
 from hoomd.md import _md
 import hoomd
 from hoomd.md.pair import lj
 
-print("importing plugin.")
 from hoomd.respa_plugin import _respa_plugin
 
 

@@ -1,4 +1,5 @@
-print("Importing Respa Integrator!")
+print("Importing RESPA plugin. (1/27/2022 11:52 MDT)")
+
 import itertools
 
 from hoomd.respa_plugin import _respa_plugin
