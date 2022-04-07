@@ -4,9 +4,15 @@
 
 #include "RespaIntegrator.h"
 
+// DELETE THESE FOR PRODUCTION
 #include <iostream>
+#include <iomanip>
 #include <fstream>
+//######
+
 #include <string>
+#include <sstream>
+#include <map>
 #include <cmath>
 
 namespace py = pybind11;
@@ -58,8 +64,8 @@ Scalar RespaIntegrator::calculateVelScalingFactor(int numSubsteps) {
 }
 
 void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<ForceCompute> forceCompute, int numSubsteps) {
-    Scalar forceScalingFactor = NULL;
-    Scalar velScalingFactor = NULL;
+    Scalar forceScalingFactor = 0;
+    Scalar velScalingFactor = 0;
 
     if (stepType == POS_STEP) {
         if (forceCompute != NULL) {
@@ -117,6 +123,7 @@ void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<Force
 /*! Prepare for the run.
 */
 void RespaIntegrator::prepRun(unsigned int timestep) {
+    this->Integrator::computeNetForce(timestep);
     //m_exec_conf->msg->warning() << "RespaIntegrator prepRun called" << std::endl;
 
     //First, make sure the vector of ForceComputes are organized to put the least frequent force at the front, and the most frequent force at the back.
@@ -130,6 +137,13 @@ void RespaIntegrator::prepRun(unsigned int timestep) {
 
     //Now create the substeps needed to execute the RESPA algorithm.
     RespaIntegrator::createSubsteps(m_respa_forces, 1);
+
+    if (m_forces.size() == 0) {
+        m_forces.reserve(m_respa_forces.size());
+        for (unsigned int i = 0; i < m_respa_forces.size(); i++) {
+            m_forces.push_back(m_respa_forces.at(i).first);
+        }
+    }
 
     m_prepared = true;
 
@@ -154,7 +168,7 @@ void RespaIntegrator::prepRun(unsigned int timestep) {
 */
 void RespaIntegrator::update(unsigned int timestep)
 {
-    Integrator::update(timestep);
+    //Integrator::update(timestep);
     //m_exec_conf->msg->warning() << "TIMESTEP: " << timestep << std::endl;
 
     // ensure that prepRun() has been called
@@ -175,6 +189,7 @@ void RespaIntegrator::update(unsigned int timestep)
     //m_exec_conf->msg->warning() << "\tThere are " << m_respa_step_types.size() << " respa steps to execute." << std::endl;
 
     for (unsigned int i = 0; i < m_respa_step_types.size(); i++) {
+        //m_exec_conf->msg->warning() << "ForceCompute # \"" << m_respa_step_force_computes.at(i) << "\" timestep: " << timestep << "\n";
         //m_exec_conf->msg->warning() << "\tRespaStep #" << i << ":" << std::endl;
 
         //m_exec_conf->msg->warning() << "\t\tPositions/Velocities:" << "\n";
@@ -201,24 +216,25 @@ void RespaIntegrator::update(unsigned int timestep)
                                           access_location::host,
                                           access_mode::read);
 
-            Scalar minForce = NULL;
-            Scalar maxForce = NULL;
-            Scalar avgForce = 0.0;
-
+            //GO BACK AND DELETE IOMANIP CALL.
+            std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
 
             for (unsigned int i = 0; i < m_pdata->getN(); i++) {
                 Scalar forceX = h_force.data[i].x;
                 Scalar forceY = h_force.data[i].y;
                 Scalar forceZ = h_force.data[i].z;
 
-                // if (i % 100 == 0) {
-                //     m_exec_conf->msg->warning() << " Fx:" << forceX << " Fy:" << forceY << " Fz:" << forceZ << "\n";
-                // }
+                //GO BACK AND DELETE INCLUDE FSTREAM CALL
+                myFile <<" ts: " << timestep << " i: " << i << " Fx: " << std::setprecision(13) << forceX << " Fy: " << forceY << " Fz: " << forceZ << "\n";
 
                 h_vel.data[i].x = h_vel.data[i].x + forceScalingFactor * forceX / h_vel.data[i].w; //The "w" is the particle mass. For another example of this usage, see ParticleData::getMass
                 h_vel.data[i].y = h_vel.data[i].y + forceScalingFactor * forceY / h_vel.data[i].w;
                 h_vel.data[i].z = h_vel.data[i].z + forceScalingFactor * forceZ / h_vel.data[i].w;
+
+                myFile <<" ts: " << timestep << " i: " << i << " vx: " << std::setprecision(13) <<  h_vel.data[i].x << " vy: " <<  h_vel.data[i].y << " vz: " <<  h_vel.data[i].z << "\n";
             }
+
+            myFile.close();
 
             //m_exec_conf->msg->warning() << "\t\tminForce: " << minForce << std::endl;
             //m_exec_conf->msg->warning() << "\t\tmaxForce: " << maxForce << std::endl;
@@ -236,14 +252,14 @@ void RespaIntegrator::update(unsigned int timestep)
                                        access_location::host,
                                        access_mode::readwrite);
 
-            Scalar maxD = NULL;
-            Scalar minD = NULL;
-            Scalar avgD = NULL;
-
             const BoxDim& box = m_pdata->getGlobalBox();
+
+            std::fstream myFile("FORCEDATA_OG.txt", std::fstream::out | std::fstream::app);
 
             for (unsigned int i = 0; i < m_pdata->getN(); i++)
             {
+                myFile <<" ts: " << timestep << " i: " << i << " x: " << std::setprecision(13) <<  h_pos.data[i].x << " y: " <<  h_pos.data[i].y << " z: " <<  h_pos.data[i].z << "\n";
+
                 Scalar3 pos = make_scalar3(
                     h_pos.data[i].x + velScalingFactor * h_vel.data[i].x,
                     h_pos.data[i].y + velScalingFactor * h_vel.data[i].y,
@@ -254,11 +270,9 @@ void RespaIntegrator::update(unsigned int timestep)
                 h_pos.data[i].x = pos.x;
                 h_pos.data[i].y = pos.y;
                 h_pos.data[i].z = pos.z;
-
-                // h_pos.data[i].x = h_pos.data[i].x + velScalingFactor * h_vel.data[i].x;
-                // h_pos.data[i].y = h_pos.data[i].y + velScalingFactor * h_vel.data[i].y;
-                // h_pos.data[i].z = h_pos.data[i].z + velScalingFactor * h_vel.data[i].z;
             }
+
+            myFile.close();
 
             //m_exec_conf->msg->warning() << "\t\tminD: " << minD << std::endl;
             //m_exec_conf->msg->warning() << "\t\tmaxD: " << maxD << std::endl;
@@ -268,6 +282,9 @@ void RespaIntegrator::update(unsigned int timestep)
             throw std::invalid_argument(std::to_string(stepType) + " is not a valid stepType");
         }
     }
+
+
+    this->Integrator::computeNetForce(timestep);
 
 
     if (m_prof)
@@ -375,6 +392,45 @@ void RespaIntegrator::addForce(std::shared_ptr<ForceCompute> force, int frequenc
     m_respa_forces.push_back(newForce);
 }
 
+void RespaIntegrator::printSchedule() {
+    if (!m_prepared) {
+        m_exec_conf->msg->warning() << "printSchedule() is being called on an unprepared integrator. The following schedule might be inaccurate.\n";
+    }
+
+    std::stringstream ss;
+
+    std::map< std::string , char> ptrNames;
+    char maxChar = 'A';
+
+    for (size_t i = 0; i < m_respa_step_types.size(); i++) {
+        int stepType = m_respa_step_types.at(i);
+        if (stepType == VEL_STEP) {
+            ss << "Vel Step ";
+        }
+        else {
+            ss << "Pos Step\n";
+            continue;
+        }
+
+        std::stringstream ptrSS;
+        ptrSS << m_respa_step_force_computes.at(i);
+
+        std::string forceComputePointerName = ptrSS.str();
+
+        auto it = ptrNames.find(forceComputePointerName);
+        if (it == ptrNames.end()) {
+            ptrNames[forceComputePointerName] = maxChar;
+            maxChar++;
+        }
+
+        char targChar = ptrNames[forceComputePointerName];
+
+        ss << "FC_" << targChar << "\n";
+    }
+
+    py::print(ss.str());
+}
+
 /* Export the CPU Integrator to be visible in the python module
  */
 void export_RespaIntegrator(pybind11::module& m)
@@ -383,7 +439,8 @@ void export_RespaIntegrator(pybind11::module& m)
     .def(py::init<std::shared_ptr<SystemDefinition>, Scalar>())
     .def("getNDOF", &RespaIntegrator::getNDOF)
     .def("getRotationalNDOF", &RespaIntegrator::getRotationalNDOF)
-    .def("addForce", &RespaIntegrator::addForce);
+    .def("addForce", &RespaIntegrator::addForce)
+    .def("printSchedule", &RespaIntegrator::printSchedule);
 }
 
 // ********************************

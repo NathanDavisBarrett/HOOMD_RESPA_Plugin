@@ -177,3 +177,6 @@ class mode_respa(_integrator):
 
             if f.log or f.enabled:
                 f.update_coeffs();
+
+    def print_schedule(self):
+        scheduleStr = self.cpp_integrator.printSchedule()

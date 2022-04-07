@@ -16,21 +16,10 @@
 
 #include "RespaForceCompute.h"
 
-// pybind11 is used to create the python bindings to the C++ object,
-// but not if we are compiling GPU kernels
 #ifndef __HIPCC__
 #include <hoomd/extern/pybind/include/pybind11/pybind11.h>
 #endif
 
-// (if you really don't want to include the whole hoomd.h, you can include individual files IF AND
-// ONLY IF hoomd_config.h is included first) For example: #include <hoomd/Integrator.h>
-
-// Second, we need to declare the class. One could just as easily use any class in HOOMD as a
-// template here, there are no restrictions on what a template can do
-
-//! A nonsense particle Integrator written to demonstrate how to write a plugin
-/*! This Integrator simply sets all of the particle's velocities to 0 when update() is called.
- */
 class RespaIntegrator : public Integrator
         {
         private:
@@ -105,6 +94,8 @@ class RespaIntegrator : public Integrator
 
             /// Add a new force/frequency pair.
             void addForce(std::shared_ptr<ForceCompute>, int);
+
+            void printSchedule();
 
         protected:
             AnisotropicMode m_aniso_mode; //!< Anisotropic mode for this integrator

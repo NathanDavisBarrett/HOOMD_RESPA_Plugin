@@ -165,7 +165,6 @@ RespaPotentialPair< evaluator >::~RespaPotentialPair()
 template< class evaluator >
 void RespaPotentialPair< evaluator >::computeForces(unsigned int timestep)
 {
-    //m_exec_conf->msg->warning() << "@@@@@@@@@@@ compute call received @@@@@@@@@@@";
     // start by updating the neighborlist
     this->m_nlist->compute(timestep);
 
