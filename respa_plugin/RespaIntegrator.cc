@@ -254,7 +254,7 @@ void RespaIntegrator::update(unsigned int timestep)
 
             const BoxDim& box = m_pdata->getGlobalBox();
 
-            std::fstream myFile("FORCEDATA_OG.txt", std::fstream::out | std::fstream::app);
+            std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
 
             for (unsigned int i = 0; i < m_pdata->getN(); i++)
             {
