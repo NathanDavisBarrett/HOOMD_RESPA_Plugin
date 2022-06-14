@@ -204,9 +204,9 @@ void RespaIntegrator::update(unsigned int timestep)
             std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
             Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
 
-            ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
-                                       access_location::host,
-                                       access_mode::readwrite);
+            // ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
+            //                            access_location::host,
+            //                            access_mode::readwrite);
 
             //m_exec_conf->msg->warning() << "########### CALLING COMPUTE. ###########\n";
             forceCompute->compute(timestep);
@@ -232,6 +232,7 @@ void RespaIntegrator::update(unsigned int timestep)
                 h_vel.data[i].z = h_vel.data[i].z + forceScalingFactor * forceZ / h_vel.data[i].w;
 
                 myFile <<" ts: " << timestep << " i: " << i << " vx: " << std::setprecision(13) <<  h_vel.data[i].x << " vy: " <<  h_vel.data[i].y << " vz: " <<  h_vel.data[i].z << "\n";
+                myFile <<" ts: " << timestep << " i: " << i << " x: " << std::setprecision(13) <<  h_pos.data[i].x << " y: " <<  h_pos.data[i].y << " z: " <<  h_pos.data[i].z << "\n";
             }
 
             myFile.close();
