@@ -207,7 +207,7 @@ void RespaIntegrator::update(unsigned int timestep)
               //GO BACK AND DELETE IOMANIP CALL.
             std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
             myFile <<" ts: " << timestep << " i: " << i << " x: " << std::setprecision(13) <<  h_pos.data[i].x << " y: " <<  h_pos.data[i].y << " z: " <<  h_pos.data[i].z << "\n";
-            
+
             forceCompute->compute(timestep);
 
             ArrayHandle<Scalar4>  h_force(forceCompute->getForceArray(),
@@ -258,12 +258,6 @@ void RespaIntegrator::update(unsigned int timestep)
                 h_pos.data[i].y = pos.y;
                 h_pos.data[i].z = pos.z;
             }
-
-            myFile.close();
-
-            //m_exec_conf->msg->warning() << "\t\tminD: " << minD << std::endl;
-            //m_exec_conf->msg->warning() << "\t\tmaxD: " << maxD << std::endl;
-            //m_exec_conf->msg->warning() << "\t\tavgD: " << avgD << std::endl;
         }
         else {
             throw std::invalid_argument(std::to_string(stepType) + " is not a valid stepType");
