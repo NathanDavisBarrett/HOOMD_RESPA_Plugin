@@ -204,20 +204,15 @@ void RespaIntegrator::update(unsigned int timestep)
             std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
             Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
 
-            // ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
-            //                            access_location::host,
-            //                            access_mode::readwrite);
-
-            //m_exec_conf->msg->warning() << "########### CALLING COMPUTE. ###########\n";
+              //GO BACK AND DELETE IOMANIP CALL.
+            std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
+            myFile <<" ts: " << timestep << " i: " << i << " x: " << std::setprecision(13) <<  h_pos.data[i].x << " y: " <<  h_pos.data[i].y << " z: " <<  h_pos.data[i].z << "\n";
+            
             forceCompute->compute(timestep);
-            //m_exec_conf->msg->warning() << "########### COMPUTE CALL COMPLETE. ###########\n";
 
             ArrayHandle<Scalar4>  h_force(forceCompute->getForceArray(),
                                           access_location::host,
                                           access_mode::read);
-
-            //GO BACK AND DELETE IOMANIP CALL.
-            std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
 
             for (unsigned int i = 0; i < m_pdata->getN(); i++) {
                 Scalar forceX = h_force.data[i].x;
@@ -225,14 +220,9 @@ void RespaIntegrator::update(unsigned int timestep)
                 Scalar forceZ = h_force.data[i].z;
 
                 //GO BACK AND DELETE INCLUDE FSTREAM CALL
-                myFile <<" ts: " << timestep << " i: " << i << " Fx: " << std::setprecision(13) << forceX << " Fy: " << forceY << " Fz: " << forceZ << "\n";
-
                 h_vel.data[i].x = h_vel.data[i].x + forceScalingFactor * forceX / h_vel.data[i].w; //The "w" is the particle mass. For another example of this usage, see ParticleData::getMass
                 h_vel.data[i].y = h_vel.data[i].y + forceScalingFactor * forceY / h_vel.data[i].w;
                 h_vel.data[i].z = h_vel.data[i].z + forceScalingFactor * forceZ / h_vel.data[i].w;
-
-                myFile <<" ts: " << timestep << " i: " << i << " vx: " << std::setprecision(13) <<  h_vel.data[i].x << " vy: " <<  h_vel.data[i].y << " vz: " <<  h_vel.data[i].z << "\n";
-                myFile <<" ts: " << timestep << " i: " << i << " x: " << std::setprecision(13) <<  h_pos.data[i].x << " y: " <<  h_pos.data[i].y << " z: " <<  h_pos.data[i].z << "\n";
             }
 
             myFile.close();
@@ -255,12 +245,8 @@ void RespaIntegrator::update(unsigned int timestep)
 
             const BoxDim& box = m_pdata->getGlobalBox();
 
-            std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
-
             for (unsigned int i = 0; i < m_pdata->getN(); i++)
             {
-                myFile <<" ts: " << timestep << " i: " << i << " x: " << std::setprecision(13) <<  h_pos.data[i].x << " y: " <<  h_pos.data[i].y << " z: " <<  h_pos.data[i].z << "\n";
-
                 Scalar3 pos = make_scalar3(
                     h_pos.data[i].x + velScalingFactor * h_vel.data[i].x,
                     h_pos.data[i].y + velScalingFactor * h_vel.data[i].y,
