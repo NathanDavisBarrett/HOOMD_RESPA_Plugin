@@ -168,9 +168,6 @@ void RespaIntegrator::prepRun(unsigned int timestep) {
 */
 void RespaIntegrator::update(unsigned int timestep)
 {
-    //Integrator::update(timestep);
-    //m_exec_conf->msg->warning() << "TIMESTEP: " << timestep << std::endl;
-
     // ensure that prepRun() has been called
     assert(m_prepared);
 
@@ -179,60 +176,40 @@ void RespaIntegrator::update(unsigned int timestep)
 
     // access the particle data for writing on the CPU
     assert(m_pdata);
-    ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
-                               access_location::host,
-                               access_mode::readwrite);
-    ArrayHandle<Scalar4> h_pos(m_pdata->getPositions(),
-                               access_location::host,
-                               access_mode::readwrite);
 
-    //m_exec_conf->msg->warning() << "\tThere are " << m_respa_step_types.size() << " respa steps to execute." << std::endl;
+    //GO BACK AND DELETE IOMANIP CALL.
+    //GO BACK AND DELETE INCLUDE FSTREAM CALL
+
 
     for (unsigned int i = 0; i < m_respa_step_types.size(); i++) {
-        //m_exec_conf->msg->warning() << "ForceCompute # \"" << m_respa_step_force_computes.at(i) << "\" timestep: " << timestep << "\n";
-        //m_exec_conf->msg->warning() << "\tRespaStep #" << i << ":" << std::endl;
-
-        //m_exec_conf->msg->warning() << "\t\tPositions/Velocities:" << "\n";
-
-//        for (unsigned int i = 0; i < m_pdata->getN(); i++) {
-//            m_exec_conf->msg->warning() << "\t\t\t" << i << " x: " << h_pos.data[i].x << " y: " << h_pos.data[i].y << " z: " << h_pos.data[i].z << " vx: " << h_vel.data[i].x << " vy: " << h_vel.data[i].y << " vz: " << h_vel.data[i].z << "\n";
-//        }
-
         int stepType = m_respa_step_types.at(i);
+
         if (stepType == VEL_STEP) {
-            //m_exec_conf->msg->warning() << "\t\tVEL_STEP" << std::endl;
             std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
             Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
 
-              //GO BACK AND DELETE IOMANIP CALL.
-            std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
-            myFile <<" ts: " << timestep << " i: " << i << " x: " << std::setprecision(13) <<  h_pos.data[i].x << " y: " <<  h_pos.data[i].y << " z: " <<  h_pos.data[i].z << "\n";
-
+            std::fstream myFile;
             forceCompute->compute(timestep);
 
             ArrayHandle<Scalar4>  h_force(forceCompute->getForceArray(),
                                           access_location::host,
                                           access_mode::read);
+            ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
+                                          access_location::host,
+                                          access_mode::readwrite);
 
-            for (unsigned int i = 0; i < m_pdata->getN(); i++) {
-                Scalar forceX = h_force.data[i].x;
-                Scalar forceY = h_force.data[i].y;
-                Scalar forceZ = h_force.data[i].z;
+            for (unsigned int j = 0; j < m_pdata->getN(); j++) {
+                Scalar forceX = h_force.data[j].x;
+                Scalar forceY = h_force.data[j].y;
+                Scalar forceZ = h_force.data[j].z;
 
-                //GO BACK AND DELETE INCLUDE FSTREAM CALL
-                h_vel.data[i].x = h_vel.data[i].x + forceScalingFactor * forceX / h_vel.data[i].w; //The "w" is the particle mass. For another example of this usage, see ParticleData::getMass
-                h_vel.data[i].y = h_vel.data[i].y + forceScalingFactor * forceY / h_vel.data[i].w;
-                h_vel.data[i].z = h_vel.data[i].z + forceScalingFactor * forceZ / h_vel.data[i].w;
+
+                h_vel.data[j].x = h_vel.data[j].x + forceScalingFactor * forceX / h_vel.data[j].w; //The "w" is the particle mass. For another example of this usage, see ParticleData::getMass
+                h_vel.data[j].y = h_vel.data[j].y + forceScalingFactor * forceY / h_vel.data[j].w;
+                h_vel.data[j].z = h_vel.data[j].z + forceScalingFactor * forceZ / h_vel.data[j].w;
             }
-
-            myFile.close();
-
-            //m_exec_conf->msg->warning() << "\t\tminForce: " << minForce << std::endl;
-            //m_exec_conf->msg->warning() << "\t\tmaxForce: " << maxForce << std::endl;
-            //m_exec_conf->msg->warning() << "\t\tavgForce: " << avgForce << std::endl;
         }
         else if (stepType == POS_STEP) {
-            //m_exec_conf->msg->warning() << "\t\tPOS_STEP" << std::endl;
             Scalar velScalingFactor = m_respa_step_vel_scaling_factors.at(i);
 
             ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
@@ -245,18 +222,18 @@ void RespaIntegrator::update(unsigned int timestep)
 
             const BoxDim& box = m_pdata->getGlobalBox();
 
-            for (unsigned int i = 0; i < m_pdata->getN(); i++)
+            for (unsigned int j = 0; j < m_pdata->getN(); j++)
             {
                 Scalar3 pos = make_scalar3(
-                    h_pos.data[i].x + velScalingFactor * h_vel.data[i].x,
-                    h_pos.data[i].y + velScalingFactor * h_vel.data[i].y,
-                    h_pos.data[i].z + velScalingFactor * h_vel.data[i].z);
+                    h_pos.data[j].x + velScalingFactor * h_vel.data[j].x,
+                    h_pos.data[j].y + velScalingFactor * h_vel.data[j].y,
+                    h_pos.data[j].z + velScalingFactor * h_vel.data[j].z);
 
                 pos = box.minImage(pos);
 
-                h_pos.data[i].x = pos.x;
-                h_pos.data[i].y = pos.y;
-                h_pos.data[i].z = pos.z;
+                h_pos.data[j].x = pos.x;
+                h_pos.data[j].y = pos.y;
+                h_pos.data[j].z = pos.z;
             }
         }
         else {
