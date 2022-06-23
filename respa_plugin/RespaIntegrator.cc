@@ -188,8 +188,16 @@ void RespaIntegrator::update(unsigned int timestep)
             std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
             Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
 
-            std::fstream myFile;
-            forceCompute->compute(timestep);
+            // std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
+            // myFile << "Computing Forces (Step Number " << i << ")\n";
+
+            //Make this more robust!
+            int fCforts = timestep;
+            if (i == 2) {
+                fCforts++;
+            }
+
+            forceCompute->compute(fCforts);
 
             ArrayHandle<Scalar4>  h_force(forceCompute->getForceArray(),
                                           access_location::host,
