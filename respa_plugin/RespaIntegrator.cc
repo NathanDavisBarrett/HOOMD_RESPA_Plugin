@@ -73,7 +73,7 @@ void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<ForceCompute> for
         }
         velScalingFactor = calculateVelScalingFactor(numSubsteps);
     }
-    else if (stepType == VEL_STEP) {
+    else if ((stepType == VEL_STEP_1) || (stepType == VEL_STEP_2)) {
         forceScalingFactor = calculateForceScalingFactor(numSubsteps);
     }
     else {
@@ -104,7 +104,7 @@ void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<Force
     int stepsPerParentStep = topSubsteps / parentSubsteps;
 
     for (int i = 0; i < stepsPerParentStep; i++) {
-        this->addSubstep(VEL_STEP,topForce,topSubsteps);
+        this->addSubstep(VEL_STEP_1,topForce,topSubsteps);
 
         if (forceGroups.size() == 1) { //Meaning this is the inner-most forcegroup.
             this->addSubstep(POS_STEP, NULL, topSubsteps);
@@ -116,7 +116,7 @@ void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<Force
 
             RespaIntegrator::createSubsteps(tempGroups, topSubsteps);
         }
-        this->addSubstep(VEL_STEP,topForce,topSubsteps);
+        this->addSubstep(VEL_STEP_2,topForce,topSubsteps);
     }
 }
 
@@ -184,7 +184,7 @@ void RespaIntegrator::update(unsigned int timestep)
     for (unsigned int i = 0; i < m_respa_step_types.size(); i++) {
         int stepType = m_respa_step_types.at(i);
 
-        if (stepType == VEL_STEP) {
+        if ((stepType == VEL_STEP_1) || (VEL_STEP_2)) {
             std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
             Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
 
@@ -192,12 +192,11 @@ void RespaIntegrator::update(unsigned int timestep)
             // myFile << "Computing Forces (Step Number " << i << ")\n";
 
             //Make this more robust!
-            int fCforts = timestep;
-            if (i == 2) {
-                fCforts++;
+            int targTimestep = timestep;
+            if (stepType == VEL_STEP_2) {
+                targTimestep++;
             }
-
-            forceCompute->compute(fCforts);
+            forceCompute->compute(targTimestep);
 
             ArrayHandle<Scalar4>  h_force(forceCompute->getForceArray(),
                                           access_location::host,
@@ -370,8 +369,11 @@ void RespaIntegrator::printSchedule() {
 
     for (size_t i = 0; i < m_respa_step_types.size(); i++) {
         int stepType = m_respa_step_types.at(i);
-        if (stepType == VEL_STEP) {
-            ss << "Vel Step ";
+        if (stepType == VEL_STEP_1) {
+            ss << "Vel Step 1 ";
+        }
+        else if (stepType == VEL_STEP_2) {
+            ss << "Vel Step 2 ";
         }
         else {
             ss << "Pos Step\n";

@@ -25,8 +25,9 @@ class RespaIntegrator : public Integrator
         private:
             std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> m_respa_forces;
 
-            const int VEL_STEP = 0;
+            const int VEL_STEP_1 = 0;
             const int POS_STEP = 1;
+            const int VEL_STEP_2 = 2;
 
             std::vector<int> m_respa_step_types;
             std::vector<std::shared_ptr<ForceCompute>> m_respa_step_force_computes;
