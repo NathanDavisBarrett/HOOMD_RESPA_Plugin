@@ -33,7 +33,7 @@ namespace py = pybind11;
 RespaIntegrator::RespaIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
 : Integrator(sysdef, deltaT), m_prepared(false), m_aniso_mode(Automatic) {
     m_exec_conf->msg->notice(5) << "Constructing RespaIntegrator" << std::endl;
-    //m_exec_conf->msg->warning() << "Constructing RespaIntegrator:" << this << std::endl;
+    m_exec_conf->msg->warning() << "Constructing RespaIntegrator:" << this << std::endl;
 }
 
 RespaIntegrator::~RespaIntegrator() {
