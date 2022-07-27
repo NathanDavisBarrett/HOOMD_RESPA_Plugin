@@ -113,7 +113,7 @@ void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<Force
 /*! Prepare for the run.
 */
 void RespaIntegrator::prepRun(unsigned int timestep) {
-    m_exec_conf->msg->warning() << "RespaIntegrator prepRun called" << std::endl;
+    this->Integrator::computeNetForce(timestep);
     //First, make sure the vector of ForceComputes are organized to put the least frequent force at the front, and the most frequent force at the back.
     struct SortHelper {
         inline bool operator() (const std::pair<std::shared_ptr<ForceCompute>, int> pair1, const std::pair<std::shared_ptr<ForceCompute>, int> pair2) {
@@ -132,8 +132,6 @@ void RespaIntegrator::prepRun(unsigned int timestep) {
             m_forces.push_back(m_respa_forces.at(i).first);
         }
     }
-
-    this->Integrator::computeNetForce(timestep);
 
     m_prepared = true;
 
@@ -321,6 +319,7 @@ bool RespaIntegrator::getAnisotropicMode() {
  *
  */
 void RespaIntegrator::addForce(std::shared_ptr<ForceCompute> force, int frequency) {
+    //m_exec_conf->msg->warning() << "addForce called" << std::endl;
     std::pair<std::shared_ptr<ForceCompute>, int> newForce;
     newForce.first = force;
     newForce.second = frequency;
