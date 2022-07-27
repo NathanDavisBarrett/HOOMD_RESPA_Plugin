@@ -4,12 +4,6 @@
 
 #include "RespaIntegrator.h"
 
-// DELETE THESE FOR PRODUCTION
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-//######
-
 #include <string>
 #include <sstream>
 #include <map>
@@ -33,7 +27,6 @@ namespace py = pybind11;
 RespaIntegrator::RespaIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
 : Integrator(sysdef, deltaT), m_prepared(false), m_aniso_mode(Automatic) {
     m_exec_conf->msg->notice(5) << "Constructing RespaIntegrator" << std::endl;
-    //m_exec_conf->msg->warning() << "Constructing RespaIntegrator:" << this << std::endl;
 }
 
 RespaIntegrator::~RespaIntegrator() {
@@ -89,15 +82,12 @@ void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<ForceCompute> for
 /*! Create the substeps needed for each loop and subloop in the RESPA algorithm.
 */
 void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> forceGroups, int parentSubsteps) {
-    //m_exec_conf->msg->warning() << "createSubsteps called" << std::endl;
-
     std::pair<std::shared_ptr<ForceCompute>, int> topGroup = forceGroups.at(0);
 
     std::shared_ptr<ForceCompute> topForce = topGroup.first;
     int topSubsteps = topGroup.second;
 
     if ((topSubsteps % parentSubsteps) != 0) {
-        //Error, The nubmer of substeps for each RESPA group must be a multiple of the number for the previous group.
         throw std::invalid_argument("The nubmer of substeps for each RESPA group must be a multiple of the number for the previous group.");
     }
 
@@ -123,9 +113,7 @@ void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<Force
 /*! Prepare for the run.
 */
 void RespaIntegrator::prepRun(unsigned int timestep) {
-    this->Integrator::computeNetForce(timestep);
-    //m_exec_conf->msg->warning() << "RespaIntegrator prepRun called" << std::endl;
-
+    m_exec_conf->msg->warning() << "RespaIntegrator prepRun called" << std::endl;
     //First, make sure the vector of ForceComputes are organized to put the least frequent force at the front, and the most frequent force at the back.
     struct SortHelper {
         inline bool operator() (const std::pair<std::shared_ptr<ForceCompute>, int> pair1, const std::pair<std::shared_ptr<ForceCompute>, int> pair2) {
@@ -145,9 +133,9 @@ void RespaIntegrator::prepRun(unsigned int timestep) {
         }
     }
 
-    m_prepared = true;
+    this->Integrator::computeNetForce(timestep);
 
-    //m_exec_conf->msg->warning() << "Initial Positions/Velocities:" << std::endl;
+    m_prepared = true;
 
     ArrayHandle<Scalar4> h_vel(m_pdata->getVelocities(),
                                access_location::host,
@@ -156,11 +144,6 @@ void RespaIntegrator::prepRun(unsigned int timestep) {
     ArrayHandle<Scalar4> h_pos(m_pdata->getPositions(),
                                access_location::host,
                                access_mode::readwrite);
-
-    // for (unsigned int i = 0; i < m_pdata->getN(); i++) {
-    //     //m_exec_conf->msg->warning() << i << " x: " << h_pos.data[i].x << " y: " << h_pos.data[i].y << " z: " << h_pos.data[i].z << " vx: " << h_vel.data[i].x << " vy: " << h_vel.data[i].y << " vz: " << h_vel.data[i].z << "\n";
-    // }
-
 }
 
 /*! Perform the needed calculations according to the RESPA algorithm
@@ -177,21 +160,13 @@ void RespaIntegrator::update(unsigned int timestep)
     // access the particle data for writing on the CPU
     assert(m_pdata);
 
-    //GO BACK AND DELETE IOMANIP CALL.
-    //GO BACK AND DELETE INCLUDE FSTREAM CALL
-
-
     for (unsigned int i = 0; i < m_respa_step_types.size(); i++) {
         int stepType = m_respa_step_types.at(i);
 
-        if ((stepType == VEL_STEP_1) || (VEL_STEP_2)) {
+        if ((stepType == VEL_STEP_1) || (stepType == VEL_STEP_2)) {
             std::shared_ptr<ForceCompute> forceCompute = m_respa_step_force_computes.at(i);
             Scalar forceScalingFactor = m_respa_step_force_scaling_factors.at(i);
 
-            // std::fstream myFile("FORCEDATA.txt", std::fstream::out | std::fstream::app);
-            // myFile << "Computing Forces (Step Number " << i << ")\n";
-
-            //Make this more robust!
             int targTimestep = timestep;
             if (stepType == VEL_STEP_2) {
                 targTimestep++;
@@ -248,9 +223,7 @@ void RespaIntegrator::update(unsigned int timestep)
         }
     }
 
-
     this->Integrator::computeNetForce(timestep);
-
 
     if (m_prof)
         m_prof->pop();
@@ -290,8 +263,6 @@ unsigned int RespaIntegrator::getRotationalNDOF(std::shared_ptr<ParticleGroup> g
                     aniso = getAnisotropicMode();
                     break;
     }
-
-    //m_exec_conf->msg->notice(8) << "RespaIntegrator: Setting anisotropic mode = " << aniso << std::endl;
 
     if (aniso)
     {
@@ -350,7 +321,6 @@ bool RespaIntegrator::getAnisotropicMode() {
  *
  */
 void RespaIntegrator::addForce(std::shared_ptr<ForceCompute> force, int frequency) {
-    //m_exec_conf->msg->warning() << "addForce called" << std::endl;
     std::pair<std::shared_ptr<ForceCompute>, int> newForce;
     newForce.first = force;
     newForce.second = frequency;
