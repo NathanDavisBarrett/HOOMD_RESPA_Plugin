@@ -169,7 +169,7 @@ void RespaIntegrator::update(unsigned int timestep)
             if (stepType == VEL_STEP_2) {
                 targTimestep++;
             }
-            forceCompute->compute(targTimestep);
+            forceCompute->compute(targTimestep); //Should this only happen on the second-half step? Or does HOOMD know not to re-compute if it's been computed already.
 
             ArrayHandle<Scalar4>  h_force(forceCompute->getForceArray(),
                                           access_location::host,
