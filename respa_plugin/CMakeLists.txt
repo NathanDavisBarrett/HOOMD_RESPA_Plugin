@@ -3,7 +3,6 @@ set(COMPONENT_NAME respa_plugin)
 set(_${COMPONENT_NAME}_sources
     module.cc
         RespaIntegrator.cc
-    RespaForceCompute.cc
         )
 
 #Where does CMake include the .h files?
@@ -63,7 +62,6 @@ set(files
     __init__.py
 #    respa_plugin.py
     respa_integrator.py
-    respa_pair.py
         )
 
 install(FILES ${files}

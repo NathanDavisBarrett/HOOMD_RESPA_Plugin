@@ -14,8 +14,6 @@
 #include <utility> //std::pair
 #include <string>
 
-#include "RespaForceCompute.h"
-
 #ifndef __HIPCC__
 #include <hoomd/extern/pybind/include/pybind11/pybind11.h>
 #endif

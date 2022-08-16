@@ -3,9 +3,6 @@
 
 // Include the defined classes that are to be exported to python
 #include "RespaIntegrator.h"
-#include "RespaForceCompute.h"
-#include "RespaPotentialPair.h"
-#include "AllRespaPairPotentials.h"
 
 #include <hoomd/extern/pybind/include/pybind11/pybind11.h>
 
@@ -14,28 +11,6 @@
 PYBIND11_MODULE(_respa_plugin, m)
 {
     export_RespaIntegrator(m);
-    export_RespaForceCompute(m);
-    export_RespaPotentialPair<RespaPotentialPairLJ>(m,"RespaPotentialPairLJ");/*
-    export_RespaPotentialPair<RespaPotentialPairGauss>(m,"RespaPotentialPairGauss");
-    export_RespaPotentialPair<RespaPotentialPairSLJ>(m,"RespaPotentialPairSLJ");
-    export_RespaPotentialPair<RespaPotentialPairYukawa>(m,"RespaPotentialPairYukawa");
-    export_RespaPotentialPair<RespaPotentialPairEwald>(m,"RespaPotentialPairEwald");
-    export_RespaPotentialPair<RespaPotentialPairMorse>(m,"RespaPotentialPairMorse");
-    export_RespaPotentialPair<RespaPotentialPairDPD>(m,"RespaPotentialPairDPD");
-    export_RespaPotentialPair<RespaPotentialPairMoliere>(m,"RespaPotentialPairMoliere");
-    export_RespaPotentialPair<RepsaPotentialPairZBL>(m,"RepsaPotentialPairZBL");
-    export_RespaPotentialPairDPDThermo<RespaPotentialPairDPDThermoDPD, RespaPotentialPairDPD>(m, "RespaPotentialPairDPDThermoDPD");
-    export_RespaPotentialPair<RespaPotentialPairDPDLJ>(m,"RespaPotentialPairDPDLJ");
-    export_RespaPotentialPairDPDThermo<RespaPotentialPairDPDLJThermoDPD, RespaPotentialPairDPDLJ>(m, "RespaPotentialPairDPDLJThermoDPD");
-    export_RespaPotentialPair<RespaPotentialPairForceShiftedLJ>(m,"RespaPotentialPairForceShiftedLJ");
-    export_RespaPotentialPair<RespaPotentialPairMie>(m,"RespaPotentialPairMie");
-    export_RespaPotentialPair<RespaPotentialPairReactionField>(m,"RespaPotentialPairReactionField");
-    export_RespaPotentialPair<RespaPotentialPairBuckingham>(m,"RespaPotentialPairBuckingham");
-    export_RespaPotentialPair<RespaPotentialPairLJ1208>(m,"RespaPotentialPairLJ1208");
-    export_RespaPotentialPair<RespaPotentialPairDLVO>(m,"RespaPotentialPairDLVO");
-    export_RespaPotentialPair<RespaPotentialPairFourier>(m,"RespaPotentialPairFourier");*/
-
-
 
 #ifdef ENABLE_HIP
     export_RespaGPU(m);
