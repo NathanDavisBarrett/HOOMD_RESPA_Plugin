@@ -1,5 +1,5 @@
 //
-// Created by nathan on 9/18/2021.
+// Created by nathan on 9/18/2021
 //
 
 #ifndef RESPA_PLUGIN_ALLRESPAPAIRPOTENTIALS_H
