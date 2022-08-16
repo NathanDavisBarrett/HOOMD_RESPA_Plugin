@@ -20,7 +20,7 @@ function executeForceStep(ThisForce):
     for each iteration of the child force:
       executeForceStep(childForce)
 
-  // Execute this force's second-half velocity step.
+  // Execute this force's second-half velocity step. (Involving a re-calculation of that force's values)
 
 for each overarching step:
   for each iteration of the parent-most force:
@@ -40,21 +40,21 @@ for each overarching step:
   Execute F2 first-half velocity step
     Execute F1 first-half velocity step
       Execute position step
-    Execute F2 second-half velocity step
+    Execute F2 second-half velocity step (Involving a re-calculation of F2)
 
     Execute F1 first-half velocity step
       Execute position step
-    Execute F2 second-half velocity step
+    Execute F2 second-half velocity step (Involving a re-calculation of F2)
 
     Execute F1 first-half velocity step
       Execute position step
-    Execute F2 second-half velocity step
-  Execute F2 second-half velocity step.
+    Execute F2 second-half velocity step (Involving a re-calculation of F2)
+  Execute F2 second-half velocity step (Involving a re-calculation of F1)
 ```
 
-For more details and examples see these sources:
+For more details and examples, see these sources:
 
-1. RESPA theory: http://www.columbia.edu/cu/chemistry/groups/berne/papers/jcp_97_1990_1992.pdf
+1. RESPA theory: Reversible multiple time scale molecular dynamics; J. Chem. Phys. 97, 1990 (1992); https://doi.org/10.1063/1.463137
 2. OpenMM RESPA implementation: http://docs.openmm.org/7.1.0/api-python/generated/simtk.openmm.openmm.CustomIntegrator.html
 
 # About this plugin
