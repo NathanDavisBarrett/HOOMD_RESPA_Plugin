@@ -1,7 +1,3 @@
-//
-// Created by nathan on 8/12/21.
-//
-
 #include "RespaIntegrator.h"
 
 #include <string>
@@ -15,14 +11,8 @@ namespace py = pybind11;
 #include "RespaIntegrator.cuh"
 #endif
 
-/*! \file RespaIntegrator.cc
-    \brief Definition of RespaIntegrator
-*/
-
-// ********************************
-// here follows the code for RespaIntegrator on the CPU
-
-/*! \param sysdef System to zero the velocities of
+/*! \param sysdef The system to associate this integrator with.
+    \param deltaT The overarching timestep value to use.
  */
 RespaIntegrator::RespaIntegrator(std::shared_ptr<SystemDefinition> sysdef, Scalar deltaT)
 : Integrator(sysdef, deltaT), m_prepared(false), m_aniso_mode(Automatic) {
@@ -48,14 +38,25 @@ void RespaIntegrator::setProfiler(std::shared_ptr<Profiler> prof)
     Integrator::setProfiler(prof);
 }
 
+/*! Calculates the force scaling factor for a Respa "velocity step" with the given number of substeps.
+    \param numSubsteps The number of substeps that occur between each iteration of this substep.
+ */
 Scalar RespaIntegrator::calculateForceScalingFactor(int numSubsteps) {
     return 0.5 * (m_deltaT / numSubsteps);
 }
 
+/*! Calculates the velocity scaling factor for a Respa "position step" with the given number of substeps.
+    \param numSubsteps The number of substeps that occur between each iteration of this substep.
+ */
 Scalar RespaIntegrator::calculateVelScalingFactor(int numSubsteps) {
     return (m_deltaT / numSubsteps);
 }
 
+/*! Adds the appropriate substep information to the m_respa_step_types, m_respa_step_force_computes, m_respa_step_force_scaling_factors, and m_respa_step_vel_scaling_factors vectors for a given substep.
+    \param stepType The identifier for which type of substep this particular substep is.
+    \param forceCompute The ForceCompute associated with this substep (NULL if this substep does not have an associated ForceCompute)
+    \param numSubsteps The number of substeps that will occur within each iteration of this substep.
+ */
 void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<ForceCompute> forceCompute, int numSubsteps) {
     Scalar forceScalingFactor = 0;
     Scalar velScalingFactor = 0;
@@ -80,6 +81,8 @@ void RespaIntegrator::addSubstep(int stepType, std::shared_ptr<ForceCompute> for
 }
 
 /*! Create the substeps needed for each loop and subloop in the RESPA algorithm.
+    \param forceGroups A vector for ForceCompute-Frequency pairs. Each frequency in this case is how many times each substep will execute per iteration of it's parent substep.
+    \parentSubsteps The number of times this substep's parent substep is executed per overaching timestep.
 */
 void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> forceGroups, int parentSubsteps) {
     std::pair<std::shared_ptr<ForceCompute>, int> topGroup = forceGroups.at(0);
@@ -110,7 +113,8 @@ void RespaIntegrator::createSubsteps(std::vector<std::pair<std::shared_ptr<Force
     }
 }
 
-/*! Prepare for the run.
+/*! Prepare for the run by setting up the respa sub-step schedule and setting m_prepared to true.
+    \param timestep The number correspinding this the current overaching step in the simulation. This should almost allways be zero in this case since, in almost every simlatuion, the simulation starts at timestep number zero.
 */
 void RespaIntegrator::prepRun(unsigned int timestep) {
     this->Integrator::computeNetForce(timestep);
@@ -145,7 +149,7 @@ void RespaIntegrator::prepRun(unsigned int timestep) {
 }
 
 /*! Perform the needed calculations according to the RESPA algorithm
-    \param timestep Current time step of the simulation (i.e. the timestep number??)
+    \param timestep The iteration number (of overarching timesteps) correspinding to this particular iteration of updates.
 */
 void RespaIntegrator::update(unsigned int timestep)
 {
@@ -227,7 +231,8 @@ void RespaIntegrator::update(unsigned int timestep)
         m_prof->pop();
 }
 
-/*! \param deltaT new deltaT to set
+/*! Sets the value of "deltaT", the duration of the overarching timestep.
+    \param deltaT new deltaT to set
 */
 void RespaIntegrator::setDeltaT(Scalar deltaT)
 {
@@ -315,8 +320,9 @@ bool RespaIntegrator::getAnisotropicMode() {
     return m_aniso_mode;
 }
 
-/* Add a new force/frequency pair to the integrator.
- *
+/*! Add a new force/frequency pair to the integrator.
+    \param force The ForceCompute object to be added.
+    \param frequency The number of times per overarching timestep that this force should be computed.
  */
 void RespaIntegrator::addForce(std::shared_ptr<ForceCompute> force, int frequency) {
     //m_exec_conf->msg->warning() << "addForce called" << std::endl;
@@ -326,6 +332,8 @@ void RespaIntegrator::addForce(std::shared_ptr<ForceCompute> force, int frequenc
     m_respa_forces.push_back(newForce);
 }
 
+/*! Prints the schedule of respa sub-steps that this integrator will run.
+ */
 void RespaIntegrator::printSchedule() {
     if (!m_prepared) {
         m_exec_conf->msg->warning() << "printSchedule() is being called on an unprepared integrator. The following schedule might be inaccurate.\n";

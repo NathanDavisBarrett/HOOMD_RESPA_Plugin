@@ -1,6 +1,7 @@
-//
-// Created by nathan on 8/12/21.
-//
+/*! \file RespaIntegrator.cuh
+    The CUDA implementation of this integrator is not complete.
+*/
+
 
 #ifndef RESPAPLUGIN_RespaINTEGRATOR_CUH
 #define RESPAPLUGIN_RespaINTEGRATOR_CUH

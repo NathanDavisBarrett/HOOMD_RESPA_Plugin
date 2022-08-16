@@ -1,7 +1,3 @@
-# coding: utf-8
-
-# Maintainer: NathanDavisBarrett
-
 R""" RESPA Integrator
 
 To quote hoomd/integrate.py:
@@ -33,7 +29,7 @@ class mode_respa(_integrator):
 
     Args:
         dt (float): The time interval of the outter-most force (see description bellow)
-        force/relative frequency pairs ([[force, int],...]): A list of force/frequency combinations (see description bellow)
+        force/relative frequency pairs ([[force, int],...]): A list of force/frequency combinations (see description below)
         aniso (bool): Whether to integrate rotational degrees of freedom (bool), default None (autodetect).
 
     In the RESPA algorithm, forces (and their accompanying particle groups) are associated with a certain timestep
@@ -179,4 +175,8 @@ class mode_respa(_integrator):
                 f.update_coeffs();
 
     def print_schedule(self):
+        R""" Prints the schedule for one overarching timestep in a step-by-step format similar to the schedule shown in the README.
+
+        This function exists for debugging purposes only.
+        """
         scheduleStr = self.cpp_integrator.printSchedule()

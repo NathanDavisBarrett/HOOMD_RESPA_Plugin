@@ -1,7 +1,3 @@
-//
-// Created by nathan on 8/12/21.
-//
-
 #ifndef RESPAPLUGIN_RESPAINTEGRATOR_H
 #define RESPAPLUGIN_RESPAINTEGRATOR_H
 
@@ -21,20 +17,32 @@
 class RespaIntegrator : public Integrator
         {
         private:
+            /*!
+                Stores the unsorted/unscheduled pairs of ForceCompute objects and their frequencies.
+                This is only used in between the contructor call and the prepRun call after which the following vectors are used instead.
+            */
             std::vector<std::pair<std::shared_ptr<ForceCompute>, int>> m_respa_forces;
 
+            //! Contant identifiers for distingusing respa sub-step types.
             const int VEL_STEP_1 = 0;
             const int POS_STEP = 1;
             const int VEL_STEP_2 = 2;
 
+            //! A vector to store the step type indenfiers for each sub-step.
             std::vector<int> m_respa_step_types;
+
+            //! A vector to store the force computes for each sub-step. Contains NULL for each sub-step that does not have an associated ForceCompute.
             std::vector<std::shared_ptr<ForceCompute>> m_respa_step_force_computes;
+
+            //! A vector to store the values of the force scaling factor for each sub-step. Contains 0 for position sub-steps.
             std::vector<Scalar> m_respa_step_force_scaling_factors;
+
+            //! A vector to store the values of the velocity scaling factor for each sub-step. Contains 0 for velocity sub-steps.
             std::vector<Scalar> m_respa_step_vel_scaling_factors;
 
 
         protected:
-            bool m_prepared;              //!< True if preprun had been called
+            bool m_prepared; //!< True if preprun had been called
 
         public:
             /** Anisotropic integration mode: Automatic (detect whether
@@ -94,6 +102,7 @@ class RespaIntegrator : public Integrator
             /// Add a new force/frequency pair.
             void addForce(std::shared_ptr<ForceCompute>, int);
 
+            /// Print the schedule of sub-steps for this integrator
             void printSchedule();
 
         protected:

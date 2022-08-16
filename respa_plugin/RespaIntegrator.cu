@@ -1,13 +1,11 @@
-//
-// Created by nathan on 8/12/21.
-//
-
 #include "hip/hip_runtime.h"
 
 #include "RespaIntegrator.cuh"
 
 /*! \file RespaIntegrator.cu
-    \brief CUDA kernels for RespaIntegrator
+    \brief CUDA kernels for RespaIntegrator (This file is incomplete)
+
+    The CUDA implementation of this integrator is not complete.
 */
 
 // First, the kernel code for zeroing the velocities on the GPU
