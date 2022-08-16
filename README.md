@@ -103,9 +103,8 @@ Note that sometimes the FindHOOMD script does not find the right hoomd directory
 
 The RESPA integrator can be used in a very similar fashion to the existing Hoomd integrators, with a couple of key differences. Instead of using Hoomd's automatic detection and addition of ForceCompute objects to the integrator's list of forces, you must add each force explicitly. This is because each force not only needs to be added, but it must also have an accompanying compute frequency. An example of how to add forces to the RESPA integrator is as follows.
 
-!@#$!@#$!@#$!@$##@!$#@! CHECK THIS FUNCTION CALL:
 ```
-integrator = respa_plugin.mode_respa(timestep,[
+integrator = hoomd.respa_plugin.respa_integrator.mode_respa(timestep,[
   [force1, 3],
   [force2, 1]
   ])
